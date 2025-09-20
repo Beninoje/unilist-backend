@@ -1,0 +1,75 @@
+package com.unilist.unilist.controllers;
+
+import com.unilist.unilist.dto.LoginUserDto;
+import com.unilist.unilist.dto.RegisterUserDto;
+import com.unilist.unilist.dto.VerifyUserDto;
+import com.unilist.unilist.model.User;
+import com.unilist.unilist.repository.UserRepository;
+import com.unilist.unilist.responses.LoginResponse;
+import com.unilist.unilist.services.AuthenticationService;
+import com.unilist.unilist.services.JwtService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RequestMapping("/auth")
+@RestController
+
+public class AuthenticationController {
+    private final JwtService jwtService;
+    private final AuthenticationService authenticationService;
+    private final UserRepository userRepository;
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserRepository userRepository) {
+        this.jwtService = jwtService;
+        this.authenticationService = authenticationService;
+        this.userRepository = userRepository;
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> register (@RequestBody RegisterUserDto registerUserDto) {
+        if(userRepository.findByEmail(registerUserDto.getEmail()).isPresent()){
+            return ResponseEntity.badRequest().body("Email is already in use");
+        }
+        if(userRepository.findByUsername(registerUserDto.getUsername()).isPresent()){
+            return ResponseEntity.badRequest().body("Username is already taken");
+        }
+
+        User user = authenticationService.signUp(registerUserDto);
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login (@RequestBody LoginUserDto loginUserDto) {
+        try {
+            User user = authenticationService.authenticate(loginUserDto);
+            String token = jwtService.generateToken(user);
+            LoginResponse loginResponse = new LoginResponse(token, jwtService.getJwtExpiration());
+            return ResponseEntity.ok(loginResponse);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+    @PostMapping("/verify")
+    public ResponseEntity<?> verify (@RequestBody VerifyUserDto verifyUserDto) {
+        try{
+            authenticationService.verifyUser(verifyUserDto);
+            return ResponseEntity.ok("Account verified!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/resend")
+    public ResponseEntity<?> resend (@RequestBody String email) {
+        try{
+            authenticationService.resendVerificationCode(email);
+            return ResponseEntity.ok("Account resent!");
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+}
