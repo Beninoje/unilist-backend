@@ -33,7 +33,7 @@ public class AuthenticationService {
 
     public User signUp(RegisterUserDto input) {
         String encodedPassword = passwordEncoder.encode(input.getPassword());
-        User user = new User(input.getEmail(), encodedPassword,input.getUsername());
+        User user = new User(input.getEmail(), encodedPassword, input.getFirstName(), input.getLastName());
         user.setPassword(encodedPassword);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));
@@ -66,7 +66,7 @@ public class AuthenticationService {
 
 
 
-    public void verifyUser(VerifyUserDto input){
+    public User verifyUser(VerifyUserDto input){
         Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
         if(optionalUser.isPresent()){
             User user = optionalUser.get();
@@ -77,10 +77,12 @@ public class AuthenticationService {
                 user.setEnabled(true);
                 user.setVerificationCode(null);
                 user.setVerificationExpiresAt(null);
+
                 userRepository.save(user);
             } else{
                 throw new RuntimeException("Invalid verification code");
             }
+            return user;
         } else{
             throw new RuntimeException("User not found");
         }
@@ -124,7 +126,7 @@ public class AuthenticationService {
     }
     private String generateVerificationCode(){
         Random random = new Random();
-        int code = random.nextInt(999999);
+        int code = random.nextInt(900000);
         return String.valueOf(code);
     }
 }

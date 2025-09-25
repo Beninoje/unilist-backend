@@ -1,11 +1,21 @@
-package com.unilist.unilist.dto;
+package com.unilist.unilist.responses;
 
-public class RegisterUserDto {
 
-    private String email;
-    private String password;
+public class RegisterResponse extends AuthResponse{
     private String firstName;
     private String lastName;
+    private String email;
+
+    public RegisterResponse(String token, long expiresIn) {
+        super(token, expiresIn);
+    }
+
+    public RegisterResponse(String token, long expiresIn, String email, String firstName, String lastName) {
+        super(token, expiresIn);
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+    }
 
     public String getFirstName() {
         return firstName;
@@ -30,14 +40,4 @@ public class RegisterUserDto {
     public void setEmail(String email) {
         this.email = email;
     }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-
 }

@@ -6,6 +6,7 @@ import com.unilist.unilist.dto.VerifyUserDto;
 import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.UserRepository;
 import com.unilist.unilist.responses.LoginResponse;
+import com.unilist.unilist.responses.RegisterResponse;
 import com.unilist.unilist.services.AuthenticationService;
 import com.unilist.unilist.services.JwtService;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +33,6 @@ public class AuthenticationController {
         if(userRepository.findByEmail(registerUserDto.getEmail()).isPresent()){
             return ResponseEntity.badRequest().body("Email is already in use");
         }
-        if(userRepository.findByUsername(registerUserDto.getUsername()).isPresent()){
-            return ResponseEntity.badRequest().body("Username is already taken");
-        }
 
         User user = authenticationService.signUp(registerUserDto);
         return ResponseEntity.ok(user);
@@ -56,8 +54,16 @@ public class AuthenticationController {
     @PostMapping("/verify")
     public ResponseEntity<?> verify (@RequestBody VerifyUserDto verifyUserDto) {
         try{
-            authenticationService.verifyUser(verifyUserDto);
-            return ResponseEntity.ok("Account verified!");
+            User user = authenticationService.verifyUser(verifyUserDto);
+            String token = jwtService.generateToken(user);
+            RegisterResponse registerResponse = new RegisterResponse(
+                    token,
+                    jwtService.getJwtExpiration(),
+                    user.getEmail(),
+                    user.getFirstName(),
+                    user.getLastName()
+            );
+            return ResponseEntity.ok(registerResponse);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

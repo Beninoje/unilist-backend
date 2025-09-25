@@ -18,8 +18,11 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(unique = true, nullable = false)
-    private String username;
+    @Column(nullable = false, name="first_name")
+    private String firstName;
+
+    @Column(nullable = false, name="last_name")
+    private String lastName;
 
     @Column(nullable = false)
     private String password;
@@ -33,10 +36,11 @@ public class User implements UserDetails {
     @Column(name="user_enabled")
     private boolean enabled;
 
-    public User(String email, String password, String username) {
+    public User(String email, String password, String firstName, String lastName) {
         this.email = email;
         this.password = password;
-        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 
     public User() {
@@ -106,5 +110,21 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 }
