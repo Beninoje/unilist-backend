@@ -43,7 +43,13 @@ public class AuthenticationController {
         try {
             User user = authenticationService.authenticate(loginUserDto);
             String token = jwtService.generateToken(user);
-            LoginResponse loginResponse = new LoginResponse(token, jwtService.getJwtExpiration());
+            LoginResponse loginResponse = new LoginResponse(
+                    token,
+                    jwtService.getJwtExpiration(),
+                    user.getEmail(),
+                    user.getFirstName(),
+                    user.getLastName()
+                    );
             return ResponseEntity.ok(loginResponse);
 
         } catch (Exception e) {
