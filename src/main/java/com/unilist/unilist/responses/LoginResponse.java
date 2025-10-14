@@ -2,13 +2,15 @@ package com.unilist.unilist.responses;
 
 
 public class LoginResponse {
+    private Long id;
     private String token;
     private long expiresIn;
     private String firstName;
     private String lastName;
     private String email;
 
-    public LoginResponse(String token, long expiresIn,String email, String firstName, String lastName) {
+    public LoginResponse(Long id, String token, long expiresIn,String email, String firstName, String lastName) {
+        this.id = id;
         this.token = token;
         this.expiresIn = expiresIn;
         this.firstName = firstName;
@@ -54,5 +56,13 @@ public class LoginResponse {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

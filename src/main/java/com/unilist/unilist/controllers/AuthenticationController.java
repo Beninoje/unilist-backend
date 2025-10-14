@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RequestMapping("/auth")
 @RestController
 
@@ -22,6 +25,7 @@ public class AuthenticationController {
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
+
     public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
@@ -30,8 +34,14 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> register (@RequestBody RegisterUserDto registerUserDto) {
+        Map<String, String> error = new HashMap<>();
         if(userRepository.findByEmail(registerUserDto.getEmail()).isPresent()){
-            return ResponseEntity.badRequest().body("Email is already in use");
+            error.put("email", "That email is already taken");
+            return ResponseEntity.badRequest().body(error);
+        }
+        if(registerUserDto.getPassword().length() < 12){
+            error.put("password", "Password must be greater that 8 characters");
+            return ResponseEntity.badRequest().body(error);
         }
 
         User user = authenticationService.signUp(registerUserDto);
@@ -44,6 +54,7 @@ public class AuthenticationController {
             User user = authenticationService.authenticate(loginUserDto);
             String token = jwtService.generateToken(user);
             LoginResponse loginResponse = new LoginResponse(
+                    user.getId(),
                     token,
                     jwtService.getJwtExpiration(),
                     user.getEmail(),

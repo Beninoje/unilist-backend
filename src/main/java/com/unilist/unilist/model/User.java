@@ -52,6 +52,14 @@ public class User implements UserDetails {
         return List.of();
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getEmail() {
         return this.email;
     }

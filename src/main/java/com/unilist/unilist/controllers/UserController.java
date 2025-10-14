@@ -1,24 +1,32 @@
 package com.unilist.unilist.controllers;
 
+import com.unilist.unilist.dto.UpdateUserDto;
 import com.unilist.unilist.model.User;
+import com.unilist.unilist.repository.UserRepository;
+import com.unilist.unilist.responses.UpdateUserResponse;
 import com.unilist.unilist.services.UserService;
 import org.apache.coyote.Response;
+import org.hibernate.sql.Update;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequestMapping("/users")
 @RestController
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/me")
@@ -40,6 +48,37 @@ public class UserController {
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> allUsers = userService.getAllUsers();
         return ResponseEntity.ok(allUsers);
+
+    }
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUserProfile( @RequestBody UpdateUserDto body){
+        Optional<User> optionalUser = userRepository.findByEmail(body.getEmail());
+        if(optionalUser.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        User user = optionalUser.get();
+
+        if (body.getFirstName() != null && !body.getFirstName().isEmpty()) {
+            user.setFirstName(body.getFirstName());
+        }
+
+        if (body.getLastName() != null && !body.getLastName().isEmpty()) {
+            user.setLastName(body.getLastName());
+        }
+
+        if(body.getPassword() != null && !body.getPassword().isEmpty()){
+            user.setPassword(passwordEncoder.encode(body.getPassword()));
+        }
+
+        User updatedUser = userRepository.save(user);
+
+        return ResponseEntity.ok(
+                new UpdateUserResponse(
+                        updatedUser.getFirstName(),
+                        updatedUser.getLastName(),
+                        updatedUser.getPassword()
+                )
+        );
 
     }
 
