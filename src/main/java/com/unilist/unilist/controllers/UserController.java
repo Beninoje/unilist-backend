@@ -50,27 +50,34 @@ public class UserController {
         return ResponseEntity.ok(allUsers);
 
     }
+
     @PutMapping("/update")
     public ResponseEntity<?> updateUserProfile( @RequestBody UpdateUserDto body){
-        Optional<User> optionalUser = userRepository.findByEmail(body.getEmail());
-        if(optionalUser.isEmpty()){
-            return ResponseEntity.notFound().build();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return ResponseEntity.status(401).body("Not authenticated");
         }
-        User user = optionalUser.get();
+
+        if (!authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            return ResponseEntity.status(401).body("Not authenticated");
+        }
+
+        User currentUser = (User) authentication.getPrincipal();
+
 
         if (body.getFirstName() != null && !body.getFirstName().isEmpty()) {
-            user.setFirstName(body.getFirstName());
+            currentUser.setFirstName(body.getFirstName());
         }
 
         if (body.getLastName() != null && !body.getLastName().isEmpty()) {
-            user.setLastName(body.getLastName());
+            currentUser.setLastName(body.getLastName());
         }
 
         if(body.getPassword() != null && !body.getPassword().isEmpty()){
-            user.setPassword(passwordEncoder.encode(body.getPassword()));
+            currentUser.setPassword(passwordEncoder.encode(body.getPassword()));
         }
 
-        User updatedUser = userRepository.save(user);
+        User updatedUser = userRepository.save(currentUser);
 
         return ResponseEntity.ok(
                 new UpdateUserResponse(
