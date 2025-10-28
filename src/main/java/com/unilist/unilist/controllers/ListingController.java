@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RequestMapping("/listing")
 @RestController
@@ -23,7 +24,7 @@ public class ListingController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createListing(@RequestBody CreateListingDto body){
+    public ResponseEntity<List<Listing>> createListing(@RequestBody CreateListingDto body){
         User currentUser = SecurityUtils.getCurrentUser();
 
         Listing listing = new Listing();
@@ -39,7 +40,9 @@ public class ListingController {
         listing.setUser(currentUser);
         listingRepository.save(listing);
 
-        return ResponseEntity.ok("Listing successfully created!");
+        List<Listing> updatedListings = listingRepository.findByUserId(currentUser.getId());
+
+        return ResponseEntity.ok(updatedListings);
 
     }
 }

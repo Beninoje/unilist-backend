@@ -3,6 +3,7 @@ package com.unilist.unilist.dto.listing;
 import java.util.List;
 
 public class CreateListingDto {
+    private Long id;
     private String title;
     private String description;
     private Double price;
@@ -13,7 +14,8 @@ public class CreateListingDto {
 
     public CreateListingDto(){}
 
-    public CreateListingDto(String title, String description, Double price, String category, String status, String condition, List<String> images) {
+    public CreateListingDto(Long id,String title, String description, Double price, String category, String status, String condition, List<String> images) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.price = price;
