@@ -1,5 +1,7 @@
 package com.unilist.unilist.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -33,6 +35,7 @@ public class Listing {
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="user_id")
+    @JsonIgnore
     private User user;
 
     //=========== GETTERS & SETTERS ===========//

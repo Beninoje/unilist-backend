@@ -1,5 +1,6 @@
 package com.unilist.unilist.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,11 +37,15 @@ public class User implements UserDetails {
     @Column(name="user_enabled")
     private boolean enabled;
 
-    public User(String email, String password, String firstName, String lastName) {
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Listing> listings;
+
+    public User(String email, String password, String firstName, String lastName, List<Listing> listings) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.listings = listings;
     }
 
     public User() {
@@ -134,5 +139,13 @@ public class User implements UserDetails {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public List<Listing> getListings() {
+        return listings;
+    }
+
+    public void setListings(List<Listing> listings) {
+        this.listings = listings;
     }
 }

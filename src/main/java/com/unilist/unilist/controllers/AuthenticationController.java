@@ -59,7 +59,8 @@ public class AuthenticationController {
                     jwtService.getJwtExpiration(),
                     user.getEmail(),
                     user.getFirstName(),
-                    user.getLastName()
+                    user.getLastName(),
+                    user.getListings()
                     );
             return ResponseEntity.ok(loginResponse);
 

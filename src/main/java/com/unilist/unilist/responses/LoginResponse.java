@@ -1,6 +1,10 @@
 package com.unilist.unilist.responses;
 
 
+import com.unilist.unilist.model.Listing;
+
+import java.util.List;
+
 public class LoginResponse {
     private Long id;
     private String token;
@@ -8,15 +12,18 @@ public class LoginResponse {
     private String firstName;
     private String lastName;
     private String email;
+    private List<Listing> listings;
 
-    public LoginResponse(Long id, String token, long expiresIn,String email, String firstName, String lastName) {
+    public LoginResponse(Long id, String token, long expiresIn,String email, String firstName, String lastName, List<Listing> listings) {
         this.id = id;
         this.token = token;
         this.expiresIn = expiresIn;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.listings = listings;
     }
+
 
     public String getToken() {
         return token;
@@ -56,6 +63,14 @@ public class LoginResponse {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public List<Listing> getListings() {
+        return listings;
+    }
+
+    public void setListings(List<Listing> listings) {
+        this.listings = listings;
     }
 
     public Long getId() {

@@ -33,7 +33,7 @@ public class AuthenticationService {
 
     public User signUp(RegisterUserDto input) {
         String encodedPassword = passwordEncoder.encode(input.getPassword());
-        User user = new User(input.getEmail(), encodedPassword, input.getFirstName(), input.getLastName());
+        User user = new User(input.getEmail(), encodedPassword, input.getFirstName(), input.getLastName(), null);
         user.setPassword(encodedPassword);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));
@@ -41,6 +41,7 @@ public class AuthenticationService {
         sendVerificationCodeEmail(user);
         return userRepository.save(user);
     }
+
     public User authenticate(LoginUserDto input){
         try {
             User user = userRepository.findByEmail(input.getEmail())
@@ -63,8 +64,6 @@ public class AuthenticationService {
             throw new RuntimeException("Authentication failed: " + e.getMessage());
         }
     }
-
-
 
     public User verifyUser(VerifyUserDto input){
         Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
