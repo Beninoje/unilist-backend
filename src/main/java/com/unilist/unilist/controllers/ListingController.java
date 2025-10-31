@@ -93,4 +93,15 @@ public class ListingController {
 
     }
 
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteListing(@PathVariable Long id){
+        Optional<Listing> currentListing = listingRepository.findById(id);
+        Listing listing = currentListing.orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found")
+        );
+        listingRepository.delete(listing);
+        return ResponseEntity.ok("Listing successfully deleted");
+
+    }
+
 }
