@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,6 +40,14 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Listing> listings;
+
+    @ManyToMany(fetch=FetchType.EAGER)
+    @JoinTable(
+            name = "user_favourites",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "listing_id")
+    )
+    private List<Listing> favourites = new ArrayList<>();
 
     public User(String email, String password, String firstName, String lastName, List<Listing> listings) {
         this.email = email;
@@ -147,5 +156,13 @@ public class User implements UserDetails {
 
     public void setListings(List<Listing> listings) {
         this.listings = listings;
+    }
+
+    public List<Listing> getFavourites() {
+        return favourites;
+    }
+
+    public void setFavourites(List<Listing> favourites) {
+        this.favourites = favourites;
     }
 }

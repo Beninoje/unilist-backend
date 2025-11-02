@@ -1,17 +1,23 @@
 package com.unilist.unilist.controllers;
 
 import com.unilist.unilist.dto.UpdateUserDto;
+import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.model.User;
+import com.unilist.unilist.repository.ListingRepository;
 import com.unilist.unilist.repository.UserRepository;
 import com.unilist.unilist.responses.UpdateUserResponse;
 import com.unilist.unilist.services.UserService;
+import com.unilist.unilist.utils.SecurityUtils;
+import jakarta.transaction.Transactional;
 import org.apache.coyote.Response;
 import org.hibernate.sql.Update;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,11 +28,13 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ListingRepository listingRepository;
 
-    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder, ListingRepository listingRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.listingRepository = listingRepository;
     }
 
     @GetMapping("/me")
@@ -86,6 +94,34 @@ public class UserController {
                         updatedUser.getPassword()
                 )
         );
+
+    }
+
+    @Transactional
+    @PostMapping("/favourites/{id}")
+    public ResponseEntity<?> addToFavourites(@PathVariable Long id){
+        User currentUser = SecurityUtils.getCurrentUser();
+
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+
+
+        Listing listing = listingRepository.findById(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found")
+        );
+
+        boolean isListingExists = currentUser.getFavourites().stream().
+                anyMatch(fav -> fav.getId().equals(listing.getId()));
+        if(isListingExists){
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Listing is already in favourites");
+        }
+
+        currentUser.getFavourites().add(listing);
+        userRepository.save(currentUser);
+
+        return ResponseEntity.ok("Listing successfully added to favourites");
 
     }
 

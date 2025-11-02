@@ -52,7 +52,6 @@ public class ListingController {
     }
     @PutMapping("/edit/{id}")
     public ResponseEntity<?> editListing(@PathVariable Long id, @RequestBody EditListingDto body){
-        User currentUser = SecurityUtils.getCurrentUser();
         Optional<Listing> currentListing = listingRepository.findById(id);
 
         Listing listing = currentListing.orElseThrow(() ->
@@ -103,5 +102,7 @@ public class ListingController {
         return ResponseEntity.ok("Listing successfully deleted");
 
     }
+
+
 
 }
