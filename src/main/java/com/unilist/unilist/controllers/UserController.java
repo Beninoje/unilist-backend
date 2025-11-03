@@ -113,6 +113,7 @@ public class UserController {
 
         boolean isListingExists = currentUser.getFavourites().stream().
                 anyMatch(fav -> fav.getId().equals(listing.getId()));
+
         if(isListingExists){
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Listing is already in favourites");
@@ -124,5 +125,7 @@ public class UserController {
         return ResponseEntity.ok("Listing successfully added to favourites");
 
     }
+
+
 
 }

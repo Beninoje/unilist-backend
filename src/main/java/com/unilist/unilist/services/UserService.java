@@ -1,5 +1,6 @@
 package com.unilist.unilist.services;
 
+import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -19,5 +20,10 @@ public class UserService {
         List<User> users = new ArrayList<>();
         userRepository.findAll().forEach(users::add);
         return users;
+    }
+    public List<Listing> getUserFavourites(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new RuntimeException("Not found"));
+        return user.getFavourites();
     }
 }

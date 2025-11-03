@@ -5,6 +5,7 @@ import com.unilist.unilist.dto.listing.EditListingDto;
 import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ListingRepository;
+import com.unilist.unilist.services.ListingService;
 import com.unilist.unilist.utils.SecurityUtils;
 import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,9 +25,11 @@ import java.util.Optional;
 public class ListingController {
 
     private final ListingRepository listingRepository;
+    private final ListingService listingService;
 
-    public ListingController(ListingRepository listingRepository) {
+    public ListingController(ListingRepository listingRepository, ListingService listingService) {
         this.listingRepository = listingRepository;
+        this.listingService = listingService;
     }
 
     @PostMapping("/create")
@@ -50,6 +54,7 @@ public class ListingController {
         return ResponseEntity.ok(updatedListings);
 
     }
+
     @PutMapping("/edit/{id}")
     public ResponseEntity<?> editListing(@PathVariable Long id, @RequestBody EditListingDto body){
         Optional<Listing> currentListing = listingRepository.findById(id);
@@ -103,6 +108,10 @@ public class ListingController {
 
     }
 
-
+    @GetMapping("/all")
+    public ResponseEntity<List<Listing>> getAllListings(){
+        List<Listing> allListings = listingService.getAllListings();
+        return ResponseEntity.ok(allListings);
+    }
 
 }
