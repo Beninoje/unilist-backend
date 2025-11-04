@@ -2,6 +2,7 @@ package com.unilist.unilist.services;
 
 import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.repository.ListingRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,10 +18,11 @@ public class ListingService {
         this.listingRepository = listingRepository;
     }
 
+    @Cacheable("listings")
     public List<Listing> getAllListings(){
-        List<Listing> listings = new ArrayList<>();
-        listingRepository.findAll().forEach(listings::add);
-        return listings;
+        System.out.println("Fetching from DB...");
+        return (List<Listing>) listingRepository.findAll();
+
     }
 
 }

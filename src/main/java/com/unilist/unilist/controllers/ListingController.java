@@ -7,6 +7,8 @@ import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ListingRepository;
 import com.unilist.unilist.services.ListingService;
 import com.unilist.unilist.utils.SecurityUtils;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@EnableCaching
 @RequestMapping("/listing")
 @RestController
 public class ListingController {
