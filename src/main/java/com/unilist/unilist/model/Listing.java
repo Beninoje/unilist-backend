@@ -3,6 +3,7 @@ package com.unilist.unilist.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "listings")
+@JsonPropertyOrder({ "id", "title", "description", "price", "category", "condition", "status", "images", "createdAt", "updatedAt" })
 public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
