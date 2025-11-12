@@ -5,8 +5,12 @@ import com.unilist.unilist.dto.listing.EditListingDto;
 import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ListingRepository;
+import com.unilist.unilist.repository.UserRepository;
+import com.unilist.unilist.responses.ListingOwnerResponse;
 import com.unilist.unilist.services.ListingService;
+import com.unilist.unilist.services.UserService;
 import com.unilist.unilist.utils.SecurityUtils;
+import org.apache.coyote.Response;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cglib.core.Local;
@@ -29,10 +33,14 @@ public class ListingController {
 
     private final ListingRepository listingRepository;
     private final ListingService listingService;
+    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public ListingController(ListingRepository listingRepository, ListingService listingService) {
+    public ListingController(ListingRepository listingRepository, ListingService listingService, UserRepository userRepository, UserService userService) {
         this.listingRepository = listingRepository;
         this.listingService = listingService;
+        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @PostMapping("/create")
@@ -115,6 +123,17 @@ public class ListingController {
     public ResponseEntity<List<Listing>> getAllListings(){
         List<Listing> allListings = listingService.getAllListings();
         return ResponseEntity.ok(allListings);
+    }
+
+    @GetMapping("/view/{id}")
+    public ResponseEntity<ListingOwnerResponse> viewListing(@PathVariable Long id){
+        Optional<Listing> currentListing = listingRepository.findById(id);
+        User owner = userService.fetchUserByListingId(id);
+        Listing listing = currentListing.orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found")
+        );
+        return ResponseEntity.ok().body(new ListingOwnerResponse(listing,owner));
+
     }
 
 }
