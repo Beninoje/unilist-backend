@@ -126,6 +126,22 @@ public class UserController {
 
     }
 
+    @GetMapping("/favourites/all")
+    public ResponseEntity<?> fetchAllFavourites(){
+        User currentUser = SecurityUtils.getCurrentUser();
+
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+
+        List<Listing> allFavListings = userService.getUserFavourites(currentUser.getId());
+
+        if (allFavListings.isEmpty()){
+            return ResponseEntity.badRequest().body("You have no favourites");
+        }
+        return ResponseEntity.ok().body(allFavListings);
+
+    }
 
 
 }
