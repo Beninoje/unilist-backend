@@ -3,6 +3,7 @@ package com.unilist.unilist.controllers;
 import com.unilist.unilist.dto.LoginUserDto;
 import com.unilist.unilist.dto.RegisterUserDto;
 import com.unilist.unilist.dto.VerifyUserDto;
+import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.UserRepository;
 import com.unilist.unilist.responses.LoginResponse;
@@ -60,7 +61,8 @@ public class AuthenticationController {
                     user.getEmail(),
                     user.getFirstName(),
                     user.getLastName(),
-                    user.getListings()
+                    user.getListings(),
+                    user.getFavourites().stream().map(Listing::getId).toList()
                     );
             return ResponseEntity.ok(loginResponse);
 

@@ -6,6 +6,7 @@ import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ListingRepository;
 import com.unilist.unilist.repository.UserRepository;
 import com.unilist.unilist.responses.UpdateUserResponse;
+import com.unilist.unilist.responses.UserResponse;
 import com.unilist.unilist.services.UserService;
 import com.unilist.unilist.utils.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -39,17 +40,17 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
-        }
-
-        if (!authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body("Not authenticated");
-        }
-
-        User currentUser = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(currentUser);
+        User currentUser = SecurityUtils.getCurrentUser();
+        UserResponse userResponse = new UserResponse(
+                currentUser.getId(),
+                currentUser.getEmail(),
+                currentUser.getPassword(),
+                currentUser.getFirstName(),
+                currentUser.getLastName(),
+                currentUser.getFavourites().stream().map(Listing::getId).toList(),
+                currentUser.getListings().stream().map(Listing::getId).toList()
+        );
+        return ResponseEntity.ok(userResponse);
     }
 
     @GetMapping("/all")
@@ -142,6 +143,22 @@ public class UserController {
         return ResponseEntity.ok().body(allFavListings);
 
     }
+    @DeleteMapping("/favourites/{id}")
+    public ResponseEntity<?> removeFavourite(@PathVariable Long id){
+        Optional<Listing> currentListing = listingRepository.findById(id);
+        User currentUser = SecurityUtils.getCurrentUser();
+
+        currentUser.getFavourites().removeIf(l -> l.getId().equals(currentListing.get().getId()));
+        userRepository.save(currentUser);
+        return ResponseEntity.ok().body("Listing successfully removed from your favourites");
+
+    }
+
+//    @GetMapping("/fetch/listings")
+//    public ResponseEntity<List<Listing>> fetchUserListings(@RequestBody List<Long> listingIds){
+//        User currentUser = SecurityUtils.getCurrentUser();
+//        currentUser.getListings()
+//    }
 
 
 }

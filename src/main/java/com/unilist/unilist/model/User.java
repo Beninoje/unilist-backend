@@ -38,7 +38,7 @@ public class User implements UserDetails {
     @Column(name="user_enabled")
     private boolean enabled;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Listing> listings;
 
     @ManyToMany(fetch=FetchType.EAGER)

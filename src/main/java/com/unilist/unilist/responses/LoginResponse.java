@@ -13,8 +13,9 @@ public class LoginResponse {
     private String lastName;
     private String email;
     private List<Listing> listings;
+    private List<Long> favourites;
 
-    public LoginResponse(Long id, String token, long expiresIn,String email, String firstName, String lastName, List<Listing> listings) {
+    public LoginResponse(Long id, String token, long expiresIn,String email, String firstName, String lastName, List<Listing> listings,List<Long> favourites) {
         this.id = id;
         this.token = token;
         this.expiresIn = expiresIn;
@@ -22,6 +23,7 @@ public class LoginResponse {
         this.lastName = lastName;
         this.email = email;
         this.listings = listings;
+        this.favourites = favourites;
     }
 
 
@@ -79,5 +81,13 @@ public class LoginResponse {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public List<Long> getFavourites() {
+        return favourites;
+    }
+
+    public void setFavourites(List<Long> favourites) {
+        this.favourites = favourites;
     }
 }
