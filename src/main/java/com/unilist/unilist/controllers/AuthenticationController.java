@@ -88,6 +88,7 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PostMapping("/resend")
     public ResponseEntity<?> resend (@RequestBody String email) {
         try{

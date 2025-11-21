@@ -1,5 +1,6 @@
 package com.unilist.unilist.responses;
 
+import com.unilist.unilist.dto.listing.ListingOwnerDTO;
 import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.model.User;
 
@@ -21,21 +22,21 @@ public record ListingOwnerResponse (
     String ownerEmail
 ) {
 
-    public ListingOwnerResponse(Listing listing, User owner) {
-        this(
-                listing.getId(),
-                listing.getTitle(),
-                listing.getPrice(),
-                listing.getCategory(),
-                listing.getDescription(),
-                listing.getImages(),
-                listing.getCondition(),
-                listing.getCreatedAt(),
-                owner.getFirstName(),
-                owner.getLastName(),
-                owner.getEmail()
-        );
-    }
+//    public ListingOwnerResponse(Listing listing, ListingOwnerDTO owner) {
+//        this(
+//                listing.getId(),
+//                listing.getTitle(),
+//                listing.getPrice(),
+//                listing.getCategory(),
+//                listing.getDescription(),
+//                listing.getImages(),
+//                listing.getCondition(),
+//                listing.getCreatedAt(),
+//                owner.firstName(),
+//                owner.lastName(),
+//                owner.email()
+//        );
+//    }
 
 
 }

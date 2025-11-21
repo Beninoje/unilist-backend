@@ -1,9 +1,11 @@
 package com.unilist.unilist.services;
 
+import com.unilist.unilist.dto.listing.ListingOwnerDTO;
 import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ListingRepository;
 import com.unilist.unilist.repository.UserRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,10 +32,24 @@ public class UserService {
                 .orElseThrow(()-> new RuntimeException("Not found"));
         return user.getFavourites();
     }
-    public User fetchUserByListingId(Long listingId){
+    @Cacheable(value="users", key="#listingId")
+    public ListingOwnerDTO getListingOwner(Long listingId){
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(()-> new RuntimeException("Listing not found"));
+        User owner = listing.getUser();
 
-        return listing.getUser();
+        return new ListingOwnerDTO(
+                listing.getId(),
+                listing.getTitle(),
+                listing.getPrice(),
+                listing.getCategory(),
+                listing.getDescription(),
+                listing.getImages(),
+                listing.getCondition(),
+                listing.getCreatedAt(),
+                owner.getFirstName(),
+                owner.getLastName(),
+                owner.getEmail()
+        );
     }
 }

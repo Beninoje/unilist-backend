@@ -2,6 +2,7 @@ package com.unilist.unilist.controllers;
 
 import com.unilist.unilist.dto.listing.CreateListingDto;
 import com.unilist.unilist.dto.listing.EditListingDto;
+import com.unilist.unilist.dto.listing.ListingOwnerDTO;
 import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ListingRepository;
@@ -11,6 +12,7 @@ import com.unilist.unilist.services.ListingService;
 import com.unilist.unilist.services.UserService;
 import com.unilist.unilist.utils.SecurityUtils;
 import org.apache.coyote.Response;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cglib.core.Local;
@@ -43,6 +45,7 @@ public class ListingController {
         this.userService = userService;
     }
 
+    @CacheEvict(value = "listings", allEntries = true)
     @PostMapping("/create")
     public ResponseEntity<List<Listing>> createListing(@RequestBody CreateListingDto body){
         User currentUser = SecurityUtils.getCurrentUser();
@@ -67,6 +70,7 @@ public class ListingController {
     }
 
     @PutMapping("/edit/{id}")
+    @CacheEvict(value = "listings", allEntries = true)
     public ResponseEntity<?> editListing(@PathVariable Long id, @RequestBody EditListingDto body){
         Optional<Listing> currentListing = listingRepository.findById(id);
 
@@ -109,6 +113,7 @@ public class ListingController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @CacheEvict(value = "listings", allEntries = true)
     public ResponseEntity<?> deleteListing(@PathVariable Long id){
         Optional<Listing> currentListing = listingRepository.findById(id);
         Listing listing = currentListing.orElseThrow(() ->
@@ -126,13 +131,10 @@ public class ListingController {
     }
 
     @GetMapping("/view/{id}")
-    public ResponseEntity<ListingOwnerResponse> viewListing(@PathVariable Long id){
-        Optional<Listing> currentListing = listingRepository.findById(id);
-        User owner = userService.fetchUserByListingId(id);
-        Listing listing = currentListing.orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found")
-        );
-        return ResponseEntity.ok().body(new ListingOwnerResponse(listing,owner));
+    public ResponseEntity<ListingOwnerDTO> viewListing(@PathVariable Long id){
+        ListingOwnerDTO listing = userService.getListingOwner(id);
+
+        return ResponseEntity.ok().body(listing);
 
     }
 
