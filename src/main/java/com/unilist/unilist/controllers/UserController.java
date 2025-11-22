@@ -20,8 +20,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RequestMapping("/users")
 @RestController
@@ -135,7 +137,7 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
 
-        List<Listing> allFavListings = userService.getUserFavourites(currentUser.getId());
+        Set<Listing> allFavListings = userService.getUserFavourites(currentUser.getId());
 
         if (allFavListings.isEmpty()){
             return ResponseEntity.badRequest().body("You have no favourites");
@@ -154,11 +156,12 @@ public class UserController {
 
     }
 
-//    @GetMapping("/fetch/listings")
-//    public ResponseEntity<List<Listing>> fetchUserListings(@RequestBody List<Long> listingIds){
-//        User currentUser = SecurityUtils.getCurrentUser();
-//        currentUser.getListings()
-//    }
+    @GetMapping("/listings/all")
+    public ResponseEntity<List<Listing>> fetchUserListings(){
+        User currentUser = SecurityUtils.getCurrentUser();
+        List<Listing> userListings = currentUser.getListings().stream().sorted(Comparator.comparing(Listing::getCreatedAt).reversed()).toList();
+        return ResponseEntity.ok().body(userListings);
+    }
 
 
 }

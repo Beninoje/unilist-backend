@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -27,7 +28,7 @@ public class UserService {
         userRepository.findAll().forEach(users::add);
         return users;
     }
-    public List<Listing> getUserFavourites(Long userId){
+    public Set<Listing> getUserFavourites(Long userId){
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new RuntimeException("Not found"));
         return user.getFavourites();

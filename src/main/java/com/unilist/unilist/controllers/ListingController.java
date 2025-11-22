@@ -11,6 +11,7 @@ import com.unilist.unilist.responses.ListingOwnerResponse;
 import com.unilist.unilist.services.ListingService;
 import com.unilist.unilist.services.UserService;
 import com.unilist.unilist.utils.SecurityUtils;
+import jakarta.transaction.Transactional;
 import org.apache.coyote.Response;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -112,17 +113,28 @@ public class ListingController {
 
     }
 
+    @Transactional
     @DeleteMapping("/delete/{id}")
-    @CacheEvict(value = "listings", allEntries = true)
-    public ResponseEntity<?> deleteListing(@PathVariable Long id){
-        Optional<Listing> currentListing = listingRepository.findById(id);
-        Listing listing = currentListing.orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found")
-        );
-        listingRepository.delete(listing);
-        return ResponseEntity.ok("Listing successfully deleted");
+    @CacheEvict(value={"listings", "users"}, allEntries=true)
+    public ResponseEntity<?> deleteListing(@PathVariable Long id) {
+        Listing listing = listingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
 
+        User owner = listing.getUser();
+        owner.getListings().remove(listing);
+        userRepository.save(owner);
+
+        Iterable<User> users = userRepository.findAll();
+        for (User user : users) {
+            if (user.getFavourites().remove(listing)) {
+                userRepository.save(user); // persist join table change
+            }
+        }
+
+        listingRepository.delete(listing); // safe to delete now
+        return ResponseEntity.ok("Listing successfully deleted");
     }
+
 
     @GetMapping("/all")
     public ResponseEntity<List<Listing>> getAllListings(){
