@@ -7,6 +7,7 @@ import com.unilist.unilist.repository.ListingRepository;
 import com.unilist.unilist.repository.UserRepository;
 import com.unilist.unilist.responses.UpdateUserResponse;
 import com.unilist.unilist.responses.UserResponse;
+import com.unilist.unilist.security.CustomJwtUser;
 import com.unilist.unilist.services.UserService;
 import com.unilist.unilist.utils.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -42,7 +43,11 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
-        User currentUser = SecurityUtils.getCurrentUser();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+
         UserResponse userResponse = new UserResponse(
                 currentUser.getId(),
                 currentUser.getEmail(),
@@ -64,16 +69,10 @@ public class UserController {
 
     @PutMapping("/update")
     public ResponseEntity<?> updateUserProfile( @RequestBody UpdateUserDto body){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
-        }
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if (!authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body("Not authenticated");
-        }
-
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
 
 
         if (body.getFirstName() != null && !body.getFirstName().isEmpty()) {
@@ -103,39 +102,36 @@ public class UserController {
     @Transactional
     @PostMapping("/favourites/{id}")
     public ResponseEntity<?> addToFavourites(@PathVariable Long id){
-        User currentUser = SecurityUtils.getCurrentUser();
 
-        if (currentUser == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+
+        Listing listing = listingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+
+        boolean exists = currentUser.getFavourites().stream()
+                .anyMatch(fav -> fav.getId().equals(listing.getId()));
 
 
-        Listing listing = listingRepository.findById(id).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found")
-        );
-
-        boolean isListingExists = currentUser.getFavourites().stream().
-                anyMatch(fav -> fav.getId().equals(listing.getId()));
-
-        if(isListingExists){
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Listing is already in favourites");
+        if (exists) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Listing already added to favourites");
         }
 
         currentUser.getFavourites().add(listing);
         userRepository.save(currentUser);
 
-        return ResponseEntity.ok("Listing successfully added to favourites");
 
+        return ResponseEntity.ok("Listing added to favourites");
     }
 
     @GetMapping("/favourites/all")
     public ResponseEntity<?> fetchAllFavourites(){
-        User currentUser = SecurityUtils.getCurrentUser();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if (currentUser == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
 
         Set<Listing> allFavListings = userService.getUserFavourites(currentUser.getId());
 
@@ -145,10 +141,14 @@ public class UserController {
         return ResponseEntity.ok().body(allFavListings);
 
     }
+
     @DeleteMapping("/favourites/{id}")
     public ResponseEntity<?> removeFavourite(@PathVariable Long id){
         Optional<Listing> currentListing = listingRepository.findById(id);
-        User currentUser = SecurityUtils.getCurrentUser();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
 
         currentUser.getFavourites().removeIf(l -> l.getId().equals(currentListing.get().getId()));
         userRepository.save(currentUser);
@@ -158,7 +158,11 @@ public class UserController {
 
     @GetMapping("/listings/all")
     public ResponseEntity<List<Listing>> fetchUserListings(){
-        User currentUser = SecurityUtils.getCurrentUser();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+
         List<Listing> userListings = currentUser.getListings().stream().sorted(Comparator.comparing(Listing::getCreatedAt).reversed()).toList();
         return ResponseEntity.ok().body(userListings);
     }

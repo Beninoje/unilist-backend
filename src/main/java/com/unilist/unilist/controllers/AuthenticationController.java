@@ -55,14 +55,13 @@ public class AuthenticationController {
             User user = authenticationService.authenticate(loginUserDto);
             String token = jwtService.generateToken(user);
             LoginResponse loginResponse = new LoginResponse(
-                    user.getId(),
-                    token,
-                    jwtService.getJwtExpiration(),
-                    user.getEmail(),
-                    user.getFirstName(),
-                    user.getLastName(),
-                    user.getListings(),
-                    user.getFavourites().stream().map(Listing::getId).toList()
+                        user.getId(),
+                        token,
+                        jwtService.getJwtExpiration(),
+                        user.getEmail(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getFavourites().stream().map(Listing::getId).toList()
                     );
             return ResponseEntity.ok(loginResponse);
 

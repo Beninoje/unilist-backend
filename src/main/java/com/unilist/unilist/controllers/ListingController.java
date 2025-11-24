@@ -8,6 +8,7 @@ import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ListingRepository;
 import com.unilist.unilist.repository.UserRepository;
 import com.unilist.unilist.responses.ListingOwnerResponse;
+import com.unilist.unilist.security.CustomJwtUser;
 import com.unilist.unilist.services.ListingService;
 import com.unilist.unilist.services.UserService;
 import com.unilist.unilist.utils.SecurityUtils;
@@ -49,7 +50,10 @@ public class ListingController {
     @CacheEvict(value = "listings", allEntries = true)
     @PostMapping("/create")
     public ResponseEntity<List<Listing>> createListing(@RequestBody CreateListingDto body){
-        User currentUser = SecurityUtils.getCurrentUser();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
 
         Listing listing = new Listing();
         listing.setTitle(body.getTitle());

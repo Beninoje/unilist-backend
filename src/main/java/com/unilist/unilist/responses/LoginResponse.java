@@ -4,6 +4,7 @@ package com.unilist.unilist.responses;
 import com.unilist.unilist.model.Listing;
 
 import java.util.List;
+import java.util.Set;
 
 public class LoginResponse {
     private Long id;
@@ -12,17 +13,15 @@ public class LoginResponse {
     private String firstName;
     private String lastName;
     private String email;
-    private List<Listing> listings;
     private List<Long> favourites;
 
-    public LoginResponse(Long id, String token, long expiresIn,String email, String firstName, String lastName, List<Listing> listings,List<Long> favourites) {
+    public LoginResponse(Long id, String token, long expiresIn,String email, String firstName, String lastName,List<Long> favourites) {
         this.id = id;
         this.token = token;
         this.expiresIn = expiresIn;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.listings = listings;
         this.favourites = favourites;
     }
 
@@ -65,14 +64,6 @@ public class LoginResponse {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public List<Listing> getListings() {
-        return listings;
-    }
-
-    public void setListings(List<Listing> listings) {
-        this.listings = listings;
     }
 
     public Long getId() {

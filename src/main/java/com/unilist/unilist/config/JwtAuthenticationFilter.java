@@ -1,6 +1,9 @@
 package com.unilist.unilist.config;
 
 
+import com.unilist.unilist.model.User;
+import com.unilist.unilist.repository.UserRepository;
+import com.unilist.unilist.security.CustomJwtUser;
 import com.unilist.unilist.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,21 +21,23 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
-
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    private final UserRepository userRepository;
+    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
     }
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/auth"); // ✅ skip /auth routes
+        return path.startsWith("/auth");
     }
 
 
@@ -50,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Missing Authorization header");
-            return; // stop chain
+            return;
         }
 
         final String jwt = authHeader.substring(7);
@@ -62,7 +67,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (userEmail != null && auth == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-
+//                Optional<User> user = userRepository.findByEmail(userEmail);
+//                CustomJwtUser customUser = new CustomJwtUser(user);
                 if (!jwtService.isTokenValid(jwt, userDetails)) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("Invalid or expired JWT");
