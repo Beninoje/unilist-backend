@@ -4,6 +4,7 @@ import com.unilist.unilist.model.Listing;
 import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ListingRepository;
 import com.unilist.unilist.responses.ListingOwnerResponse;
+import com.unilist.unilist.responses.ListingResponse;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,20 @@ public class ListingService {
     }
 
     @Cacheable("listings")
-    public List<Listing> getAllListings(){
+    public List<ListingResponse> getAllListings(){
         System.out.println("Fetching from DB...");
-        return (List<Listing>) listingRepository.findAll();
+        return listingRepository.findAll()
+                .stream()
+                .map(listing -> new ListingResponse(
+                        listing.getId(),
+                        listing.getTitle(),
+                        listing.getPrice(),
+                        listing.getImages(),
+                        listing.getCategory(),
+                        listing.getCondition(),
+                        listing.getDescription()
+                ))
+                .toList();
 
     }
     @Cacheable(value="listings", key="#id")

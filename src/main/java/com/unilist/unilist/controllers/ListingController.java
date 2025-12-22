@@ -8,6 +8,7 @@ import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ListingRepository;
 import com.unilist.unilist.repository.UserRepository;
 import com.unilist.unilist.responses.ListingOwnerResponse;
+import com.unilist.unilist.responses.ListingResponse;
 import com.unilist.unilist.security.CustomJwtUser;
 import com.unilist.unilist.services.ListingService;
 import com.unilist.unilist.services.UserService;
@@ -141,8 +142,8 @@ public class ListingController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<List<Listing>> getAllListings(){
-        List<Listing> allListings = listingService.getAllListings();
+    public ResponseEntity<List<ListingResponse>> getAllListings(){
+        List<ListingResponse> allListings = listingService.getAllListings();
         return ResponseEntity.ok(allListings);
     }
 
