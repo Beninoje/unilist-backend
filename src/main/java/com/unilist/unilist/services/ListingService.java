@@ -24,7 +24,7 @@ public class ListingService {
         this.listingRepository = listingRepository;
     }
 
-    @Cacheable("listings")
+    @Cacheable("listings-all")
     public List<ListingResponse> getAllListings(){
         System.out.println("Fetching from DB...");
         return listingRepository.findAll()
@@ -41,6 +41,7 @@ public class ListingService {
                 .toList();
 
     }
+
     @Cacheable(value="listings", key="#id")
     public Listing getListingById(Long id){
         return listingRepository.findById(id)

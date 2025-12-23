@@ -76,4 +76,8 @@ public class ListingResponse {
         this.condition = condition;
         this.description = description;
     }
+
+    public ListingResponse() {
+
+    }
 }

@@ -28,11 +28,13 @@ public class UserService {
         userRepository.findAll().forEach(users::add);
         return users;
     }
+
     public Set<Listing> getUserFavourites(Long userId){
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new RuntimeException("Not found"));
         return user.getFavourites();
     }
+
     @Cacheable(value="users", key="#listingId")
     public ListingOwnerDTO getListingOwner(Long listingId){
         Listing listing = listingRepository.findById(listingId)
