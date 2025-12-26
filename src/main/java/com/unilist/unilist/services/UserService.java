@@ -17,10 +17,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ListingRepository listingRepository;
+    private final ListingService listingService;
 
-    public UserService(UserRepository userRepository, EmailService emailService, ListingRepository listingRepository) {
+    public UserService(UserRepository userRepository, EmailService emailService, ListingRepository listingRepository, ListingService listingService) {
         this.userRepository = userRepository;
         this.listingRepository = listingRepository;
+        this.listingService = listingService;
     }
 
     public List<User> getAllUsers() {
@@ -35,10 +37,9 @@ public class UserService {
         return user.getFavourites();
     }
 
-    @Cacheable(value="users", key="#listingId")
+    @Cacheable(value="listing_owner", key="#listingId")
     public ListingOwnerDTO getListingOwner(Long listingId){
-        Listing listing = listingRepository.findById(listingId)
-                .orElseThrow(()-> new RuntimeException("Listing not found"));
+        Listing listing = listingService.getListingById(listingId);
         User owner = listing.getUser();
 
         return new ListingOwnerDTO(

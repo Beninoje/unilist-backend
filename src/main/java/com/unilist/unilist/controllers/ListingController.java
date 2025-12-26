@@ -19,6 +19,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cglib.core.Local;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -48,7 +52,7 @@ public class ListingController {
         this.userService = userService;
     }
 
-    @CacheEvict(value = "listings", allEntries = true)
+    @CacheEvict(value = "listings-all", allEntries = true)
     @PostMapping("/create")
     public ResponseEntity<List<Listing>> createListing(@RequestBody CreateListingDto body){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -120,7 +124,7 @@ public class ListingController {
 
     @Transactional
     @DeleteMapping("/delete/{id}")
-    @CacheEvict(value={"listings", "users"}, allEntries=true)
+    @CacheEvict(value={"listings-all", "users"}, allEntries=true)
     public ResponseEntity<?> deleteListing(@PathVariable Long id) {
         Listing listing = listingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
@@ -142,10 +146,14 @@ public class ListingController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<List<ListingResponse>> getAllListings(){
-        List<ListingResponse> allListings = listingService.getAllListings();
-        return ResponseEntity.ok(allListings);
+    public ResponseEntity<Page<ListingResponse>> getAllListings(
+            @RequestParam(defaultValue="0") int page,
+            @RequestParam(defaultValue="4") int value
+    ){
+        Pageable pageable = PageRequest.of(page,value, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(listingService.getListings(pageable));
     }
+
 
     @GetMapping("/view/{id}")
     public ResponseEntity<ListingOwnerDTO> viewListing(@PathVariable Long id){
