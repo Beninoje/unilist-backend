@@ -56,4 +56,9 @@ public class UserService {
                 owner.getEmail()
         );
     }
+    public User getListingOwnerUser(Long listingId){
+        Listing listing = listingService.getListingById(listingId);
+        User owner = listing.getUser();
+        return owner;
+    }
 }
