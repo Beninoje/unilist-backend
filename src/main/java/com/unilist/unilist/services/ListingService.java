@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ListingService {
@@ -27,23 +28,6 @@ public class ListingService {
         this.listingRepository = listingRepository;
     }
 
-//    @Cacheable("listings-all")
-//    public List<ListingResponse> getAllListings(){
-//        System.out.println("Fetching from DB...");
-//        return listingRepository.findAll()
-//                .stream()
-//                .map(listing -> new ListingResponse(
-//                        listing.getId(),
-//                        listing.getTitle(),
-//                        listing.getPrice(),
-//                        listing.getImages(),
-//                        listing.getCategory(),
-//                        listing.getCondition(),
-//                        listing.getDescription()
-//                ))
-//                .toList();
-//
-//    }
     public Page<ListingResponse> getListings(Pageable pageable){
         return listingRepository.findAll(pageable)
                 .map(listing -> new ListingResponse(
@@ -57,7 +41,7 @@ public class ListingService {
                 ));
     }
 
-    public Listing getListingById(Long id){
+    public Listing getListingById(UUID id){
         return listingRepository.findById(id)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Listing not found"));
     }

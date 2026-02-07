@@ -9,13 +9,12 @@ import org.springframework.stereotype.Repository;
 
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends CrudRepository<User, UUID> {
     Optional<User> findByEmail(String email);
     Optional<User> findByVerificationCode(String verificationCode);
-    Optional<User> findById(Long userId);
+    Optional<User> findById(UUID userId);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.favourites WHERE u.id = :id")
-    Optional<User> findByIdWithFavourites(@Param("id") Long id);
 }

@@ -7,6 +7,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.UUID;
+
 public class SecurityUtils {
 
     public static User getCurrentUser() {
@@ -20,7 +22,7 @@ public class SecurityUtils {
 
         return (User) authentication.getPrincipal();
     }
-    public static Long getCurrentUserId() {
+    public static UUID getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
         return principal.getId();

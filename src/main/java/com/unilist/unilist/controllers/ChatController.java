@@ -9,6 +9,7 @@ import com.unilist.unilist.model.User;
 import com.unilist.unilist.repository.ChatRepository;
 import com.unilist.unilist.repository.MessageRepository;
 import com.unilist.unilist.repository.UserRepository;
+import com.unilist.unilist.responses.ws.SendMessageResponse;
 import com.unilist.unilist.services.UserService;
 import com.unilist.unilist.services.chat.MessageService;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +47,7 @@ public class ChatController {
     }
 
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(ChatMessageDto incomingMessage){
+    public void sendMessage(@Payload ChatMessageDto incomingMessage){
 
         Chat chat = chatRepository.findById(incomingMessage.getChatId())
                         .orElseThrow(()-> new IllegalArgumentException("Chat does not exist"));
@@ -67,9 +68,18 @@ public class ChatController {
 
         messageRepository.save(message);
 
+        SendMessageResponse sendMessageResponse = new SendMessageResponse(
+                chat.getId(),
+                message.getId(),
+                user.getId(),
+                message.getContent(),
+                chat.getListingId()
+
+        );
+
         messageTemplate.convertAndSend(
                 "/topic/chat/" + chat.getId(),
-                message
+                sendMessageResponse
         );
     }
 

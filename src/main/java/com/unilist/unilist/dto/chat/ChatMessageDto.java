@@ -8,6 +8,7 @@ import com.unilist.unilist.type.MessageType;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -15,10 +16,10 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 public class ChatMessageDto {
-    private Long chatId;
-    private Long senderId;
+    private UUID chatId;
+    private UUID senderId;
     private String content;
-    private Long listingId;
+    private UUID listingId;
     private Instant createdAt;
 
 }

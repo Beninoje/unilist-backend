@@ -21,10 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @RequestMapping("/users")
 @RestController
@@ -101,7 +98,7 @@ public class UserController {
 
     @Transactional
     @PostMapping("/favourites/{id}")
-    public ResponseEntity<?> addToFavourites(@PathVariable Long id){
+    public ResponseEntity<?> addToFavourites(@PathVariable UUID id){
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -143,7 +140,7 @@ public class UserController {
     }
 
     @DeleteMapping("/favourites/{id}")
-    public ResponseEntity<?> removeFavourite(@PathVariable Long id){
+    public ResponseEntity<?> removeFavourite(@PathVariable UUID id){
         Optional<Listing> currentListing = listingRepository.findById(id);
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 

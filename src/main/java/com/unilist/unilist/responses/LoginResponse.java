@@ -5,17 +5,18 @@ import com.unilist.unilist.model.Listing;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class LoginResponse {
-    private Long id;
+    private UUID id;
     private String token;
     private long expiresIn;
     private String firstName;
     private String lastName;
     private String email;
-    private List<Long> favourites;
+    private List<UUID> favourites;
 
-    public LoginResponse(Long id, String token, long expiresIn,String email, String firstName, String lastName,List<Long> favourites) {
+    public LoginResponse(UUID id, String token, long expiresIn,String email, String firstName, String lastName,List<UUID> favourites) {
         this.id = id;
         this.token = token;
         this.expiresIn = expiresIn;
@@ -66,19 +67,19 @@ public class LoginResponse {
         this.email = email;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public List<Long> getFavourites() {
+    public List<UUID> getFavourites() {
         return favourites;
     }
 
-    public void setFavourites(List<Long> favourites) {
+    public void setFavourites(List<UUID> favourites) {
         this.favourites = favourites;
     }
 }

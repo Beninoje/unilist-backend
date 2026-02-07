@@ -1,15 +1,16 @@
 package com.unilist.unilist.responses;
 
 import java.util.List;
+import java.util.UUID;
 
 public record UserResponse(
-        Long id,
+        UUID id,
         String email,
         String password,
         String firstName,
         String lastName,
-        List<Long> favourites,
-        List<Long> listings
+        List<UUID> favourites,
+        List<UUID> listings
         ) {
 
 }

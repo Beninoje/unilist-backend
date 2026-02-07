@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @EnableCaching
 @RequestMapping("/listing")
@@ -81,7 +82,7 @@ public class ListingController {
 
     @PutMapping("/edit/{id}")
     @CacheEvict(value = "listings", allEntries = true)
-    public ResponseEntity<?> editListing(@PathVariable Long id, @RequestBody EditListingDto body){
+    public ResponseEntity<?> editListing(@PathVariable UUID id, @RequestBody EditListingDto body){
         Optional<Listing> currentListing = listingRepository.findById(id);
 
         Listing listing = currentListing.orElseThrow(() ->
@@ -125,7 +126,7 @@ public class ListingController {
     @Transactional
     @DeleteMapping("/delete/{id}")
     @CacheEvict(value={"listings-all", "users"}, allEntries=true)
-    public ResponseEntity<?> deleteListing(@PathVariable Long id) {
+    public ResponseEntity<?> deleteListing(@PathVariable UUID id) {
         Listing listing = listingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
 
@@ -156,7 +157,7 @@ public class ListingController {
 
 
     @GetMapping("/view/{id}")
-    public ResponseEntity<ListingOwnerDTO> viewListing(@PathVariable Long id){
+    public ResponseEntity<ListingOwnerDTO> viewListing(@PathVariable UUID id){
         ListingOwnerDTO listing = userService.getListingOwner(id);
 
         return ResponseEntity.ok().body(listing);

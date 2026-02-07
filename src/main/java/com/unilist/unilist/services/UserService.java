@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -31,14 +32,14 @@ public class UserService {
         return users;
     }
 
-    public Set<Listing> getUserFavourites(Long userId){
+    public Set<Listing> getUserFavourites(UUID userId){
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new RuntimeException("Not found"));
         return user.getFavourites();
     }
 
     @Cacheable(value="listing_owner", key="#listingId")
-    public ListingOwnerDTO getListingOwner(Long listingId){
+    public ListingOwnerDTO getListingOwner(UUID listingId){
         Listing listing = listingService.getListingById(listingId);
         User owner = listing.getUser();
 
@@ -56,7 +57,7 @@ public class UserService {
                 owner.getEmail()
         );
     }
-    public User getListingOwnerUser(Long listingId){
+    public User getListingOwnerUser(UUID listingId){
         Listing listing = listingService.getListingById(listingId);
         User owner = listing.getUser();
         return owner;

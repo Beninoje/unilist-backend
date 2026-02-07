@@ -3,6 +3,7 @@ package com.unilist.unilist.dto.chat;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -10,8 +11,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 public class CreateChatDto {
-    private Long senderId;
+    private UUID senderId;
     private String content;
-    private Long listingId;
+    private UUID listingId;
     private Instant createdAt;
 }
