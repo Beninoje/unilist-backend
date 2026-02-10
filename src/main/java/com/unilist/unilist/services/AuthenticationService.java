@@ -1,5 +1,6 @@
 package com.unilist.unilist.services;
 
+import com.resend.core.exception.ResendException;
 import com.unilist.unilist.dto.LoginUserDto;
 import com.unilist.unilist.dto.RegisterUserDto;
 import com.unilist.unilist.dto.VerifyUserDto;
@@ -120,7 +121,7 @@ public class AuthenticationService {
 
         try{
             emailService.sendVerificationEmail(user.getEmail(), subject,htmlMessage);
-        }catch (MessagingException e){
+        }catch (ResendException e){
             e.printStackTrace();
         }
     }

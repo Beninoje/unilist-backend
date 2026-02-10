@@ -1,23 +1,39 @@
 package com.unilist.unilist.services;
 
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
-    @Autowired
-    private JavaMailSender emailSender;
 
-    public void sendVerificationEmail(String to, String subject, String text) throws MessagingException {
-        MimeMessage mimeMessage = emailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(text, true);
-        emailSender.send(mimeMessage);
+    @Value("${RESEND_API_KEY}")
+    private  String resendApiKey;
+
+    public  void sendVerificationEmail(String to, String subject, String text) throws ResendException {
+
+        Resend resend = new Resend(resendApiKey);
+        try {
+            CreateEmailOptions params = CreateEmailOptions.builder()
+                    .from("Acme <onboarding@resend.dev>")
+                    .to("nojebeni@gmail.com")
+                    .subject(subject)
+                    .html(text)
+                    .build();
+
+            CreateEmailResponse response = resend.emails().send(params);
+            System.out.println("Email sent with ID: " + response.getId());
+        }catch (ResendException e){
+            e.printStackTrace();
+        }
+
     }
 }
