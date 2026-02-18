@@ -13,6 +13,7 @@ import java.util.UUID;
 public class CreateChatDto {
     private UUID senderId;
     private String content;
+    private UUID sellerId;
     private UUID listingId;
     private Instant createdAt;
 }

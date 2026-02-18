@@ -15,16 +15,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    @Value("${RESEND_API_KEY}")
-    private  String resendApiKey;
+    @Value("${resend.api.key}")
+    private String resendApiKey;
 
-    public  void sendVerificationEmail(String to, String subject, String text) throws ResendException {
+    public void sendVerificationEmail(String to, String subject, String text) throws ResendException {
 
         Resend resend = new Resend(resendApiKey);
+
         try {
             CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from("Acme <onboarding@resend.dev>")
-                    .to("nojebeni@gmail.com")
+                    .from("Campora <noreply@campora.ca>")
+                    .to(to)
                     .subject(subject)
                     .html(text)
                     .build();

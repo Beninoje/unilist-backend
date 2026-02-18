@@ -62,7 +62,7 @@ public class AuthenticationController {
                         user.getFirstName(),
                         user.getLastName(),
                         user.getFavourites().stream().map(Listing::getId).toList()
-                    );
+            );
             return ResponseEntity.ok(loginResponse);
 
         } catch (Exception e) {

@@ -2,6 +2,7 @@ package com.unilist.unilist.controllers;
 
 import com.unilist.unilist.dto.chat.ChatMessageDto;
 import com.unilist.unilist.dto.chat.CreateChatDto;
+import com.unilist.unilist.dto.chat.FetchChatByIdDto;
 import com.unilist.unilist.dto.listing.ListingOwnerDTO;
 import com.unilist.unilist.model.Chat;
 import com.unilist.unilist.model.Message;
@@ -12,6 +13,8 @@ import com.unilist.unilist.repository.UserRepository;
 import com.unilist.unilist.responses.ws.SendMessageResponse;
 import com.unilist.unilist.services.UserService;
 import com.unilist.unilist.services.chat.MessageService;
+import org.apache.coyote.Response;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -19,13 +22,11 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/chats")
@@ -96,8 +97,9 @@ public class ChatController {
     @PostMapping("/send")
     public ResponseEntity<?> createChat(@RequestBody CreateChatDto incomingMsg){
         User buyer = userRepository.findById(incomingMsg.getSenderId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        User seller = userService.getListingOwnerUser(incomingMsg.getListingId());
+                .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));
+        User seller = userRepository.findById(incomingMsg.getSellerId())
+                .orElseThrow(() -> new IllegalArgumentException("Seller not found"));
         if(buyer.getId().equals(seller.getId())){
             return ResponseEntity.status(400).body("You cannot create a chat with yourself");
         }
@@ -120,4 +122,16 @@ public class ChatController {
         return ResponseEntity.ok(chat.getId());
     }
 
+//    @GetMapping("/get/{id}")
+//    public ResponseEntity<?> getChat(@PathVariable UUID id){
+//        Chat chat = chatRepository.findById(id)
+//                .orElseThrow(()-> new IllegalArgumentException("Chat does not exist"));
+//
+//        FetchChatByIdDto chatResponse = new FetchChatByIdDto(
+//                chat.getBuyer().getFirstName(),
+//                chat.getSeller().getFirstName(),
+//                chat.getMessages()
+//        );
+//        return ResponseEntity.ok(chatResponse);
+//    }
 }

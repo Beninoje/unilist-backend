@@ -52,6 +52,7 @@ public class UserService {
                 listing.getImages(),
                 listing.getCondition(),
                 listing.getCreatedAt(),
+                owner.getId(),
                 owner.getFirstName(),
                 owner.getLastName(),
                 owner.getEmail()
