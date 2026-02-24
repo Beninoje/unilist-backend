@@ -26,7 +26,9 @@ jobs:
 
       - name: Add server to known hosts
         run: |
-          ssh-keyscan -H 187.77.211.81 > ~/.ssh/known_hosts
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 187.77.211.81 >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Build JAR
         run: |
