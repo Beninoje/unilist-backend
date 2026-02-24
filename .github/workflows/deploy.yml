@@ -24,7 +24,7 @@ jobs:
 
       - name: Build JAR
         run: |
-          ./mvn clean package
+          mvn clean package
 
       - name: Deploy JAR to Server
         run: |
