@@ -53,7 +53,7 @@ public class ListingController {
         this.userService = userService;
     }
 
-    @CacheEvict(value = "listings-all", allEntries = true)
+//    @CacheEvict(value = "listings-all", allEntries = true)
     @PostMapping("/create")
     public ResponseEntity<List<Listing>> createListing(@RequestBody CreateListingDto body){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -81,7 +81,7 @@ public class ListingController {
     }
 
     @PutMapping("/edit/{id}")
-    @CacheEvict(value = "listings", allEntries = true)
+//    @CacheEvict(value = "listings", allEntries = true)
     public ResponseEntity<?> editListing(@PathVariable UUID id, @RequestBody EditListingDto body){
         Optional<Listing> currentListing = listingRepository.findById(id);
 
@@ -125,7 +125,7 @@ public class ListingController {
 
     @Transactional
     @DeleteMapping("/delete/{id}")
-    @CacheEvict(value={"listings-all", "users"}, allEntries=true)
+//    @CacheEvict(value={"listings-all", "users"}, allEntries=true)
     public ResponseEntity<?> deleteListing(@PathVariable UUID id) {
         Listing listing = listingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));

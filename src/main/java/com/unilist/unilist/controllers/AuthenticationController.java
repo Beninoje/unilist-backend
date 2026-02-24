@@ -11,10 +11,7 @@ import com.unilist.unilist.responses.RegisterResponse;
 import com.unilist.unilist.services.AuthenticationService;
 import com.unilist.unilist.services.JwtService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -97,5 +94,10 @@ public class AuthenticationController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<?> testMsg(){
+        return ResponseEntity.ok("Hello World!");
     }
 }

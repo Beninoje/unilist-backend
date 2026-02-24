@@ -1,0 +1,41 @@
+name: Deploy Campora Backend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          ssh-keyscan -H 187.77.211.81 > ~/.ssh/known_hosts
+
+      - name: Build JAR
+        run: |
+          ./mvn clean package
+
+      - name: Deploy JAR to Server
+        run: |
+          JAR_NAME="unilist-0.0.1-API.jar"
+          LOCAL_JAR_PATH="build/libs/$JAR_NAME"
+          REMOTE_SERVER="admin@187.77.211.81"
+          REMOTE_JAR_DIR="/opt/campora-backend"
+
+          rsync -avz -e "ssh" $LOCAL_JAR_PATH $REMOTE_SERVER:$REMOTE_JAR_DIR/$JAR_NAME
+
+          ssh $REMOTE_SERVER << EOF
+            mv $REMOTE_JAR_DIR/$JAR_NAME $REMOTE_JAR_DIR/campora.jar
+            sudo systemctl restart campora.service
+          EOF

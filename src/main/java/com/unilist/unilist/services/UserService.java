@@ -38,7 +38,7 @@ public class UserService {
         return user.getFavourites();
     }
 
-    @Cacheable(value="listing_owner", key="#listingId")
+//    @Cacheable(value="listing_owner", key="#listingId")
     public ListingOwnerDTO getListingOwner(UUID listingId){
         Listing listing = listingService.getListingById(listingId);
         User owner = listing.getUser();
