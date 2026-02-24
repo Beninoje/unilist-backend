@@ -36,7 +36,7 @@ jobs:
       - name: Deploy JAR to Server
         run: |
           JAR_NAME="unilist-0.0.1-API.jar"
-          LOCAL_JAR_PATH="build/libs/$JAR_NAME"
+          LOCAL_JAR_PATH="target/$JAR_NAME"
           REMOTE_SERVER="admin@187.77.211.81"
           REMOTE_JAR_DIR="/opt/campora-backend"
 
