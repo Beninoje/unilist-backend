@@ -96,8 +96,4 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<?> testMsg(){
-        return ResponseEntity.ok("Hello World!");
-    }
 }
