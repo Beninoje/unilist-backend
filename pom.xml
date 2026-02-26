@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.unilist</groupId>
-	<artifactId>unilist</artifactId>
+	<artifactId>campora</artifactId>
 	<version>0.0.1-API</version>
 	<name>unilist-backend</name>
 	<description>Backend for unilist</description>

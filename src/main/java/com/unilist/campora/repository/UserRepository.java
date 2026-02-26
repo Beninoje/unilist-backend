@@ -1,0 +1,18 @@
+package com.unilist.campora.repository;
+
+
+import com.unilist.campora.model.User;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface UserRepository extends CrudRepository<User, UUID> {
+    Optional<User> findByEmail(String email);
+    Optional<User> findByVerificationCode(String verificationCode);
+    Optional<User> findById(UUID userId);
+
+}
