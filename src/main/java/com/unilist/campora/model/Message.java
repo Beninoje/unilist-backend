@@ -1,5 +1,6 @@
 package com.unilist.campora.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -29,6 +30,7 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name="sender_id",nullable = false)
+    @JsonBackReference
     private User sender;
 
     @Column(nullable = false)

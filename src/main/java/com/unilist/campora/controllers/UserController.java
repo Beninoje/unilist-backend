@@ -1,12 +1,16 @@
 package com.unilist.campora.controllers;
 
 import com.unilist.campora.dto.UpdateUserDto;
+import com.unilist.campora.dto.chat.FetchAllChatsByCurrentUserResponseDto;
+import com.unilist.campora.model.Chat;
 import com.unilist.campora.model.Listing;
 import com.unilist.campora.model.User;
+import com.unilist.campora.repository.ChatRepository;
 import com.unilist.campora.repository.ListingRepository;
 import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.responses.UpdateUserResponse;
 import com.unilist.campora.responses.UserResponse;
+import com.unilist.campora.services.ChatService;
 import com.unilist.campora.services.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -25,12 +29,15 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ListingRepository listingRepository;
-
-    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder, ListingRepository listingRepository) {
+    private final ChatRepository chatRepository;
+    private final ChatService chatService;
+    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder, ListingRepository listingRepository, ChatRepository chatRepository, ChatService chatService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.listingRepository = listingRepository;
+        this.chatRepository = chatRepository;
+        this.chatService = chatService;
     }
 
     @GetMapping("/me")
@@ -159,5 +166,18 @@ public class UserController {
         return ResponseEntity.ok().body(userListings);
     }
 
+    @GetMapping("/chats/all")
+    public List<FetchAllChatsByCurrentUserResponseDto> fetchAllChats(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+        List<Chat> chats = chatRepository.findAllByBuyerOrSeller(currUser);
+        return chats.stream()
+                .sorted(Comparator.comparing(Chat::getCreatedAt).reversed())
+                .map(chat -> chatService.mapToDto(chat, currUser))
+                .toList();
+
+    }
 
 }

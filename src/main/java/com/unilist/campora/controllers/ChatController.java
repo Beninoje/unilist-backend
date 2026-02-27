@@ -122,6 +122,7 @@ public class ChatController {
         return ResponseEntity.ok(chat.getId());
     }
 
+
 //    @GetMapping("/get/{id}")
 //    public ResponseEntity<?> getChat(@PathVariable UUID id){
 //        Chat chat = chatRepository.findById(id)
