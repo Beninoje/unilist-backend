@@ -14,7 +14,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Builder
-@Table(name="chats")
+@Table(name="chats",
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {"seller_id", "buyer_id", "listing_id"}
+        )
+)
 public class Chat {
     @Id
     @GeneratedValue(generator = "UUID")

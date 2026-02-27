@@ -94,6 +94,15 @@ public class ChatController {
         if(buyer.getId().equals(seller.getId())){
             return ResponseEntity.status(400).body("You cannot create a chat with yourself");
         }
+
+        boolean chatExists = chatRepository.existsByBuyerIdAndSellerIdAndListingId(
+                buyer.getId(),
+                incomingMsg.getSellerId(),
+                incomingMsg.getListingId()
+        );
+        if(chatExists){
+            return ResponseEntity.badRequest().body("Cannot create a chat with the same buyer,seller and listing ID");
+        }
         Chat chat = Chat.builder()
                 .buyer(buyer)
                 .seller(seller)

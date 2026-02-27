@@ -8,4 +8,9 @@ import java.util.UUID;
 
 @Repository
 public interface ChatRepository  extends JpaRepository<Chat, UUID> {
+    boolean existsByBuyerIdAndSellerIdAndListingId(
+            UUID buyerId,
+            UUID sellerId,
+            UUID listingId
+    );
 }
