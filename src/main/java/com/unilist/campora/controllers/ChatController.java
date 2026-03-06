@@ -3,10 +3,13 @@ package com.unilist.campora.controllers;
 import com.unilist.campora.dto.chat.ChatMessageDto;
 import com.unilist.campora.dto.chat.CreateChatDto;
 import com.unilist.campora.dto.chat.FetchChatByIdDto;
+import com.unilist.campora.dto.ws.TypingEventDto;
 import com.unilist.campora.model.Chat;
+import com.unilist.campora.model.Listing;
 import com.unilist.campora.model.Message;
 import com.unilist.campora.model.User;
 import com.unilist.campora.repository.ChatRepository;
+import com.unilist.campora.repository.ListingRepository;
 import com.unilist.campora.repository.MessageRepository;
 import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.responses.ws.SendMessageResponse;
@@ -33,13 +36,15 @@ public class ChatController {
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
+    private final ListingRepository listingRepository;
 
-    public ChatController(SimpMessagingTemplate messageTemplate, MessageService messageService, MessageRepository messageRepository, ChatRepository chatRepository, UserRepository userRepository) {
+    public ChatController(SimpMessagingTemplate messageTemplate, MessageService messageService, MessageRepository messageRepository, ChatRepository chatRepository, UserRepository userRepository, ListingRepository listingRepository) {
         this.messageTemplate = messageTemplate;
         this.messageService = messageService;
         this.messageRepository = messageRepository;
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
+        this.listingRepository = listingRepository;
     }
 
     @MessageMapping("/chat.sendMessage")
@@ -55,22 +60,42 @@ public class ChatController {
         User user = userRepository.findById(incomingMessage.getSenderId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        Message replyTo = null;
+
+        if(incomingMessage.getReplyToMessageId() != null){
+            replyTo = messageRepository.findById(incomingMessage.getReplyToMessageId())
+                    .orElse(null);
+        }
+
         Message message = Message.builder()
                         .chat(chat)
                         .sender(user)
                         .content(incomingMessage.getContent())
+                        .replyTo(replyTo)
+                        .isInitial(false)
                         .createdAt(Instant.now())
                         .build();
 
         messageRepository.save(message);
+        UUID replyToId = message.getReplyTo() != null ? message.getReplyTo().getId() : null;
+        String replyToContent = message.getReplyTo() != null ? message.getReplyTo().getContent() : null;
+        UUID replyToSenderId = message.getReplyTo() != null ? message.getSender().getId() : null;
+        String replyToSenderFirstName = message.getReplyTo() != null ? message.getReplyTo().getSender().getFirstName() : null;
+        String replyToSenderLastName = message.getReplyTo() != null ? message.getReplyTo().getSender().getLastName() : null;
 
         SendMessageResponse sendMessageResponse = new SendMessageResponse(
                 chat.getId(),
                 message.getId(),
                 user.getId(),
                 message.getContent(),
-                chat.getListingId()
-
+                chat.getListingId(),
+                replyToId,
+                replyToContent,
+                replyToSenderId,
+                replyToSenderFirstName,
+                replyToSenderLastName,
+                message.getIsInitial(),
+                message.getCreatedAt()
         );
 
         messageTemplate.convertAndSend(
@@ -79,16 +104,14 @@ public class ChatController {
         );
     }
 
-//    @MessageMapping("/chat.addUser")
-//    @SendTo("/topic/public")
-//    public ChatMessageDto addUser(
-//            @RequestBody ChatMessageDto message,
-//            SimpMessageHeaderAccessor headerAccessor
-//    ){
-//        // Add user to websocket session
-//        headerAccessor.getSessionAttributes().put("username",message.getSender());
-//        return message;
-//    }
+    @MessageMapping("/chat.typing")
+    public void typing(TypingEventDto typingEventDto){
+        messageTemplate.convertAndSend(
+                "/topic/chat/" + typingEventDto.getChatId() + "/typing",
+                typingEventDto
+        );
+    }
+
     @PostMapping("/send")
     public ResponseEntity<?> createChat(@RequestBody CreateChatDto incomingMsg){
         User buyer = userRepository.findById(incomingMsg.getSenderId())
@@ -119,6 +142,7 @@ public class ChatController {
                 .chat(chat)
                 .sender(buyer)
                 .content(incomingMsg.getContent())
+                .isInitial(true)
                 .createdAt(Instant.now())
                 .build();
         messageRepository.save(message);
@@ -136,7 +160,7 @@ public class ChatController {
 
         Chat chat = chatRepository.findChatForUser(id,currentUser.getId())
                 .orElseThrow(()-> new IllegalArgumentException("Chat does not exist or access denied"));
-
+        Listing listing = listingRepository.findById(chat.getListingId()).orElseThrow(() -> new IllegalArgumentException("Listing does not exist anymore"));
         User otherUser;
         if(chat.getBuyer().getId().equals(currentUser.getId())){
             otherUser = chat.getSeller();
@@ -149,6 +173,10 @@ public class ChatController {
                 otherUser.getFirstName(),
                 otherUser.getLastName(),
                 otherUser.getId(),
+                listing.getId(),
+                listing.getImages(),
+                listing.getTitle(),
+                listing.getStatus(),
                 messageService.getAllMessagesByChat(chat)
 
         ));

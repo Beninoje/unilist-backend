@@ -33,10 +33,6 @@ public class ListingService {
             key="#pageable.pageNumber + '-' + #pageable.pageSize"
     )
     public PageableListingResponse<ListingResponse> getListings(Pageable pageable){
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found in DB"));
 
         Page<Listing> page = listingRepository.findAll(pageable);
         Page<ListingResponse> mapped = page.map(
@@ -48,7 +44,7 @@ public class ListingService {
                 listing.getCategory(),
                 listing.getCondition(),
                 listing.getDescription(),
-                listing.getUser().getId().equals(currentUser.getId())
+                listing.getUser().getId()
 
         ));
         return new PageableListingResponse<>(mapped);

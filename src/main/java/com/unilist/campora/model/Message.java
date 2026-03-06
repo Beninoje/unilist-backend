@@ -36,6 +36,12 @@ public class Message {
     @Column(nullable = false)
     private String content;
 
+    @ManyToOne
+    @JoinColumn(name="reply_to_message_id")
+    private Message replyTo;
+
+    private Boolean isInitial = false;
+
     @Column(nullable = false)
     private Instant createdAt;
 }

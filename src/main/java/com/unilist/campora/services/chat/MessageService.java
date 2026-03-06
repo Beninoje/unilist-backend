@@ -17,12 +17,27 @@ public class MessageService {
     }
 
     public List<MessageResponseDto> getAllMessagesByChat(Chat chat){
+//        UUID replyToId = message.getReplyTo() != null ? message.getReplyTo().getId() : null;
+//        String replyToContent = message.getReplyTo() != null ? message.getReplyTo().getContent() : null;
+//        UUID replyToSenderId = message.getReplyTo() != null ? message.getSender().getId() : null;
         return chat.getMessages().stream()
                 .map(msg -> MessageResponseDto.builder()
-                        .id(msg.getId())
+                        .messageId(msg.getId())
                         .senderId(msg.getSender().getId())
                         .senderFirstName(msg.getSender().getFirstName())
                         .senderLastName(msg.getSender().getLastName())
+                        .replyToMessageId(
+                                msg.getReplyTo() != null ? msg.getReplyTo().getId() : null
+                        )
+                        .replyToContent(
+                                msg.getReplyTo() != null ? msg.getReplyTo().getContent() : null
+                        )
+                        .replyToSenderFirstName(
+                                msg.getReplyTo() != null ? msg.getReplyTo().getSender().getFirstName() : null
+                        )
+                        .replyToSenderLastName(
+                                msg.getReplyTo() != null ? msg.getReplyTo().getSender().getLastName() : null
+                        )
                         .content(msg.getContent())
                         .createdAt(msg.getCreatedAt())
                         .build()

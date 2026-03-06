@@ -1,5 +1,6 @@
 package com.unilist.campora.dto.chat;
 
+import com.unilist.campora.model.Message;
 import lombok.*;
 
 import java.time.Instant;
@@ -15,6 +16,7 @@ public class ChatMessageDto {
     private UUID senderId;
     private String content;
     private UUID listingId;
+    private UUID replyToMessageId;
     private Instant createdAt;
 
 }
