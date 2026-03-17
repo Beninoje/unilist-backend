@@ -23,6 +23,9 @@ public class ListingOwnerDTO {
     String ownerFirstName;
     String ownerLastName;
     String ownerEmail;
+    Double latitude;
+    Double longitude;
+    String campusType;
     boolean existingChat;
     UUID chatId;
 
@@ -39,6 +42,9 @@ public class ListingOwnerDTO {
             String ownerFirstName,
             String ownerLastName,
             String ownerEmail,
+            Double latitude,
+            Double longitude,
+            String campusType,
             boolean existingChat,
             UUID chatId
     ) {
@@ -54,6 +60,9 @@ public class ListingOwnerDTO {
         this.ownerFirstName = ownerFirstName;
         this.ownerLastName = ownerLastName;
         this.ownerEmail = ownerEmail;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.campusType = campusType;
         this.existingChat = existingChat;
         this.chatId = chatId;
     }

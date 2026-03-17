@@ -3,7 +3,9 @@ package com.unilist.campora.controllers;
 import com.unilist.campora.dto.chat.ChatMessageDto;
 import com.unilist.campora.dto.chat.CreateChatDto;
 import com.unilist.campora.dto.chat.FetchChatByIdDto;
+import com.unilist.campora.dto.ws.ReadChatDto;
 import com.unilist.campora.dto.ws.TypingEventDto;
+import com.unilist.campora.dto.ws.UnreadCountDto;
 import com.unilist.campora.model.Chat;
 import com.unilist.campora.model.Listing;
 import com.unilist.campora.model.Message;
@@ -15,6 +17,7 @@ import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.responses.ws.SendMessageResponse;
 import com.unilist.campora.services.UserService;
 import com.unilist.campora.services.chat.MessageService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -73,6 +76,7 @@ public class ChatController {
                         .content(incomingMessage.getContent())
                         .replyTo(replyTo)
                         .isInitial(false)
+                        .read(false)
                         .createdAt(Instant.now())
                         .build();
 
@@ -95,9 +99,20 @@ public class ChatController {
                 replyToSenderFirstName,
                 replyToSenderLastName,
                 message.getIsInitial(),
+                message.getRead(),
                 message.getCreatedAt()
         );
 
+        if (!chat.getBuyer().getId().equals(user.getId())) {
+            List<Object[]> buyerUnread = messageRepository.getUnreadCountsPerChat(chat.getBuyer().getId());
+            messageTemplate.convertAndSend("/topic/user/" + chat.getBuyer().getId() + "/chat", sendMessageResponse);
+            messageTemplate.convertAndSend("/topic/user/" + chat.getBuyer().getId() + "/unread", buyerUnread);
+        }
+        if (!chat.getSeller().getId().equals(user.getId())) {
+            List<Object[]> sellerUnread = messageRepository.getUnreadCountsPerChat(chat.getSeller().getId());
+            messageTemplate.convertAndSend("/topic/user/" + chat.getSeller().getId() + "/chat", sendMessageResponse);
+            messageTemplate.convertAndSend("/topic/user/" + chat.getSeller().getId() + "/unread", sellerUnread);
+        }
         messageTemplate.convertAndSend(
                 "/topic/chat/" + chat.getId(),
                 sendMessageResponse
@@ -111,8 +126,25 @@ public class ChatController {
                 typingEventDto
         );
     }
+    @MessageMapping("/chat.read")
+    public void markChatAsRead(@Payload ReadChatDto readChatDto){
+        UUID chatId = readChatDto.getChatId();
+        UUID readerId = readChatDto.getReaderId();
+
+        messageRepository.markMessageAsRead(chatId,readerId);
+        List<Object[]> updatedUnread = messageRepository.getUnreadCountsPerChat(readerId);
+        System.out.println("Publishing unread to: /topic/user/" + readerId + "/unread");
+        System.out.println("Unread data: " + updatedUnread.size() + " chats");
+        messageTemplate.convertAndSend(
+                "/topic/user/" + readerId + "/unread",
+                updatedUnread
+        );
+        messageTemplate.convertAndSend("/topic/chat/" + chatId + "/read", readChatDto);
+    }
+
 
     @PostMapping("/send")
+    @CacheEvict(value="listing_owner", key="#incomingMsg.listingId")
     public ResponseEntity<?> createChat(@RequestBody CreateChatDto incomingMsg){
         User buyer = userRepository.findById(incomingMsg.getSenderId())
                 .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));
@@ -145,7 +177,21 @@ public class ChatController {
                 .isInitial(true)
                 .createdAt(Instant.now())
                 .build();
+
         messageRepository.save(message);
+        SendMessageResponse msgRes = new SendMessageResponse(
+                chat.getId(),
+                message.getId(),
+                buyer.getId(),
+                message.getContent(),
+                chat.getListingId(),
+                null,null,null,null,null,
+                true,
+                false,
+                message.getCreatedAt()
+        );
+
+        messageTemplate.convertAndSend("/topic/user/"+seller.getId()+"/chat",msgRes);
 
         return ResponseEntity.ok(chat.getId());
     }
@@ -181,4 +227,6 @@ public class ChatController {
 
         ));
     }
+
+
 }

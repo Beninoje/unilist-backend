@@ -55,10 +55,13 @@ public class AuthenticationController {
                         user.getId(),
                         token,
                         jwtService.getJwtExpiration(),
-                        user.getEmail(),
                         user.getFirstName(),
                         user.getLastName(),
-                        user.getFavourites().stream().map(Listing::getId).toList()
+                        user.getEmail(),
+                        user.getFavourites().stream().map(Listing::getId).toList(),
+                        user.getLatitude(),
+                        user.getLongitude(),
+                        user.isOnboardingComplete()
             );
             return ResponseEntity.ok(loginResponse);
 
@@ -67,6 +70,7 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
     @PostMapping("/verify")
     public ResponseEntity<?> verify (@RequestBody VerifyUserDto verifyUserDto) {
         try{

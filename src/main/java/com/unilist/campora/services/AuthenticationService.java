@@ -36,6 +36,7 @@ public class AuthenticationService {
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));
         user.setEnabled(false);
+        user.setOnboardingComplete(false);
         sendVerificationCodeEmail(user);
         return userRepository.save(user);
     }

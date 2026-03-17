@@ -26,5 +26,6 @@ public class SendMessageResponse {
     private String replyToSenderFirstName;
     private String replyToSenderLastName;
     private Boolean isInitial;
+    private boolean read;
     private Instant createdAt;
 }

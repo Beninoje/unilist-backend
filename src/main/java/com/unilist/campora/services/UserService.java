@@ -67,6 +67,9 @@ public class UserService {
                 owner.getFirstName(),
                 owner.getLastName(),
                 owner.getEmail(),
+                owner.getLatitude(),
+                owner.getLongitude(),
+                owner.getCampusType(),
                 chatExists,
                 chatId
         );

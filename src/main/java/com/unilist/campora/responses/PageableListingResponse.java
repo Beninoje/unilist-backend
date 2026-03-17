@@ -18,6 +18,7 @@ public class PageableListingResponse<T> {
     private int size;
     private int totalElements;
     private int totalPages;
+    private boolean last;
 
 
     public PageableListingResponse(Page<T> pageData) {
@@ -26,6 +27,7 @@ public class PageableListingResponse<T> {
         this.size = pageData.getSize();
         this.totalElements = Math.toIntExact(pageData.getTotalElements());
         this.totalPages = pageData.getTotalPages();
+        this.last = pageData.isLast();
     }
 
     public List<T> getContent() {

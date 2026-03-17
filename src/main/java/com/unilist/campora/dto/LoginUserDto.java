@@ -1,17 +1,10 @@
 package com.unilist.campora.dto;
 
+import lombok.Getter;
 
+@Getter
 public class LoginUserDto {
     private String email;
     private String password;
-
-    public String getEmail() {
-        return email;
-    }
-
-
-    public String getPassword() {
-        return password;
-    }
 
 }

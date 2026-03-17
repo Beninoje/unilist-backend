@@ -1,17 +1,17 @@
 package com.unilist.campora.responses;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 import java.util.UUID;
-
 @Getter
 @Setter
 @AllArgsConstructor
-public class LoginResponse {
+@NoArgsConstructor
+public class CompletedOnboardingResponse {
     private UUID id;
     private String token;
     private long expiresIn;
@@ -21,7 +21,5 @@ public class LoginResponse {
     private List<UUID> favourites;
     private Double latitude;
     private Double longitude;
-    private boolean onboardingComplete;
-
-
+    private boolean completedOnboarding;
 }

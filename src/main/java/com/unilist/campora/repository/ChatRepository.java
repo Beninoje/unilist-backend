@@ -35,4 +35,6 @@ public interface ChatRepository  extends JpaRepository<Chat, UUID> {
     List<Chat> findAllByBuyerOrSeller(User user);
 
 
+
+
 }

@@ -1,16 +1,21 @@
 package com.unilist.campora.controllers;
 
+import com.unilist.campora.dto.CompleteOnboardingDto;
 import com.unilist.campora.dto.UpdateUserDto;
 import com.unilist.campora.dto.chat.FetchAllChatsByCurrentUserResponseDto;
 import com.unilist.campora.model.Chat;
 import com.unilist.campora.model.Listing;
+import com.unilist.campora.model.Message;
 import com.unilist.campora.model.User;
 import com.unilist.campora.repository.ChatRepository;
 import com.unilist.campora.repository.ListingRepository;
 import com.unilist.campora.repository.UserRepository;
+import com.unilist.campora.responses.CompletedOnboardingResponse;
 import com.unilist.campora.responses.UpdateUserResponse;
 import com.unilist.campora.responses.UserResponse;
 import com.unilist.campora.services.ChatService;
+import com.unilist.campora.services.GoogleGeoService;
+import com.unilist.campora.services.JwtService;
 import com.unilist.campora.services.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -31,13 +36,17 @@ public class UserController {
     private final ListingRepository listingRepository;
     private final ChatRepository chatRepository;
     private final ChatService chatService;
-    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder, ListingRepository listingRepository, ChatRepository chatRepository, ChatService chatService) {
+    private final GoogleGeoService googleGeoService;
+    private final JwtService jwtService;
+    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder, ListingRepository listingRepository, ChatRepository chatRepository, ChatService chatService, GoogleGeoService googleGeoService, JwtService jwtService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.listingRepository = listingRepository;
         this.chatRepository = chatRepository;
         this.chatService = chatService;
+        this.googleGeoService = googleGeoService;
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/me")
@@ -58,6 +67,41 @@ public class UserController {
         );
         return ResponseEntity.ok(userResponse);
     }
+    @PatchMapping("/me/onboarding")
+    public ResponseEntity<?> completeOnboarding(@RequestBody CompleteOnboardingDto body){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+        if(!body.getCampusType().equals("ORILLIA") && !body.getCampusType().equals("THUNDERBAY")){
+            throw new RuntimeException("Incorrect campus!");
+        }
+        double[] coor = googleGeoService.getCoordinatesFromPostalCode(body.getPostalCode());
+        currentUser.setLatitude(coor[0]);
+        currentUser.setLongitude(coor[1]);
+        currentUser.setPostalCode(body.getPostalCode());
+        currentUser.setCampusType(body.getCampusType());
+        currentUser.setOnboardingComplete(true);
+
+        currentUser = userRepository.save(currentUser);
+        String token = jwtService.generateToken(currentUser);
+
+        return ResponseEntity.ok(new CompletedOnboardingResponse(
+                currentUser.getId(),
+                token,
+                jwtService.getJwtExpiration(),
+                currentUser.getFirstName(),
+                currentUser.getLastName(),
+                currentUser.getEmail(),
+                currentUser.getFavourites().stream().map(Listing::getId).toList(),
+                currentUser.getLatitude(),
+                currentUser.getLongitude(),
+                currentUser.isOnboardingComplete()
+        ));
+
+
+
+    }
 
     @GetMapping("/all")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -67,7 +111,7 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> updateUserProfile( @RequestBody UpdateUserDto body){
+    public ResponseEntity<?> updateUserProfile(@RequestBody UpdateUserDto body){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User currentUser = userRepository.findByEmail(email)
@@ -174,7 +218,13 @@ public class UserController {
                 .orElseThrow(() -> new RuntimeException("User not found in DB"));
         List<Chat> chats = chatRepository.findAllByBuyerOrSeller(currUser);
         return chats.stream()
-                .sorted(Comparator.comparing(Chat::getCreatedAt).reversed())
+                .sorted(
+                        Comparator.comparing((Chat chat) ->
+                                chat.getMessages().stream()
+                                        .map(Message::getCreatedAt)
+                                        .max(Comparator.naturalOrder())
+                                        .orElse(chat.getCreatedAt())
+                        ).reversed())
                 .map(chat -> chatService.mapToDto(chat, currUser))
                 .toList();
 

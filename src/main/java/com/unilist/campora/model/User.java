@@ -2,7 +2,9 @@ package com.unilist.campora.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,6 +17,8 @@ import java.util.*;
 @Table(name="users")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User implements UserDetails {
     @Id
     @GeneratedValue(generator = "UUID")
@@ -43,8 +47,24 @@ public class User implements UserDetails {
     @Column(name="verification_expire")
     private LocalDateTime verificationExpiresAt;
 
+    @Column(name="postal_code")
+    private String postalCode;
+
+    @Column(name="latitude")
+    private Double latitude;
+
+    @Column(name="longitude")
+    private Double longitude;
+
     @Column(name="user_enabled")
     private boolean enabled;
+
+    @Column(name="onboarding_completed")
+    private boolean onboardingComplete;
+
+    @Column(name = "campus_type")
+    private String campusType;
+
 
     @JsonManagedReference
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -70,25 +90,10 @@ public class User implements UserDetails {
         this.listings = listings;
     }
 
-    public User() {
-
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return List.of();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return this.email;
     }
 
 
@@ -102,79 +107,7 @@ public class User implements UserDetails {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
-    public String getVerificationCode() {
-        return verificationCode;
-    }
 
-    public void setVerificationCode(String verificationCode) {
-        this.verificationCode = verificationCode;
-    }
 
-    public LocalDateTime getVerificationExpiresAt() {
-        return verificationExpiresAt;
-    }
-
-    public void setVerificationExpiresAt(LocalDateTime verificationExpiresAt) {
-        this.verificationExpiresAt = verificationExpiresAt;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public List<Listing> getListings() {
-        return listings;
-    }
-
-    public void setListings(List<Listing> listings) {
-        this.listings = listings;
-    }
-
-    public Set<Listing> getFavourites() {
-        return favourites;
-    }
-
-    public void setFavourites(Set<Listing> favourites) {
-        this.favourites = favourites;
-    }
 }

@@ -141,7 +141,7 @@ public class ListingController {
     @GetMapping("/all")
     public ResponseEntity<PageableListingResponse<ListingResponse>> getAllListings(
             @RequestParam(defaultValue="0") int page,
-            @RequestParam(defaultValue="4") int size
+            @RequestParam(defaultValue="10") int size
     ){
         Pageable pageable = PageRequest.of(page,size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(listingService.getListings(pageable));
@@ -158,6 +158,24 @@ public class ListingController {
 
         return ResponseEntity.ok().body(listing);
 
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchListings(@RequestParam String query){
+        List<Listing> listings = listingRepository.findListingsByQuery(query);
+        List<ListingResponse> searchedListings = listings.stream()
+                .map(listing -> new ListingResponse(
+                        listing.getId(),
+                        listing.getTitle(),
+                        listing.getPrice(),
+                        listing.getImages(),
+                        listing.getCategory(),
+                        listing.getCondition(),
+                        listing.getDescription(),
+                        listing.getUser().getId()
+                ))
+                .toList();
+        return ResponseEntity.ok().body(searchedListings);
     }
 
 }

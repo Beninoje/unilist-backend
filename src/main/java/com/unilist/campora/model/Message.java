@@ -42,6 +42,9 @@ public class Message {
 
     private Boolean isInitial = false;
 
+    @Column(name="read",nullable = false)
+    private Boolean read = false;
+
     @Column(nullable = false)
     private Instant createdAt;
 }
