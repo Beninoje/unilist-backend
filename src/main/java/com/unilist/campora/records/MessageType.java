@@ -1,4 +1,4 @@
-package com.unilist.campora.type;
+package com.unilist.campora.records;
 
 public enum MessageType {
     JOIN,

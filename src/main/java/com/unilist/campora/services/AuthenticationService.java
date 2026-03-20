@@ -4,16 +4,21 @@ import com.resend.core.exception.ResendException;
 import com.unilist.campora.dto.LoginUserDto;
 import com.unilist.campora.dto.RegisterUserDto;
 import com.unilist.campora.dto.VerifyUserDto;
+import com.unilist.campora.model.RefreshToken;
 import com.unilist.campora.model.User;
+import com.unilist.campora.repository.RefreshTokenRepository;
 import com.unilist.campora.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class AuthenticationService {
@@ -21,12 +26,14 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, EmailService emailService) {
+    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, EmailService emailService, RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.emailService = emailService;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public User signUp(RegisterUserDto input) {
@@ -101,6 +108,7 @@ public class AuthenticationService {
             throw new RuntimeException("User not found");
         }
     }
+
     public void sendVerificationCodeEmail(User user){
         String subject = "Account verification";
         String verificationCode = "VERIFICATION CODE: " + user.getVerificationCode();
@@ -123,7 +131,8 @@ public class AuthenticationService {
             e.printStackTrace();
         }
     }
-    private String generateVerificationCode(){
+
+    public String generateVerificationCode(){
         Random random = new Random();
         int code = random.nextInt(900000);
         return String.valueOf(code);

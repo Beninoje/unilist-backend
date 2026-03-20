@@ -22,7 +22,7 @@ public class GoogleGeoService {
         Map res = restTemplate.getForObject(url,Map.class);
         List results = (List) res.get("results");
         if(results == null || results.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid postal code");
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Invalid postal code");
         }
         Map geometry = (Map)((Map)results.get(0)).get("geometry");
         Map location = (Map) geometry.get("location");

@@ -82,6 +82,8 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "buyer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Chat> chats;
 
+
+
     public User(String email, String password, String firstName, String lastName, List<Listing> listings) {
         this.email = email;
         this.password = password;

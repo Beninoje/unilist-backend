@@ -3,12 +3,10 @@ package com.unilist.campora.controllers;
 import com.unilist.campora.dto.CompleteOnboardingDto;
 import com.unilist.campora.dto.UpdateUserDto;
 import com.unilist.campora.dto.chat.FetchAllChatsByCurrentUserResponseDto;
-import com.unilist.campora.model.Chat;
-import com.unilist.campora.model.Listing;
-import com.unilist.campora.model.Message;
-import com.unilist.campora.model.User;
+import com.unilist.campora.model.*;
 import com.unilist.campora.repository.ChatRepository;
 import com.unilist.campora.repository.ListingRepository;
+import com.unilist.campora.repository.RefreshTokenRepository;
 import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.responses.CompletedOnboardingResponse;
 import com.unilist.campora.responses.UpdateUserResponse;
@@ -25,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @RequestMapping("/users")
@@ -38,7 +38,10 @@ public class UserController {
     private final ChatService chatService;
     private final GoogleGeoService googleGeoService;
     private final JwtService jwtService;
-    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder, ListingRepository listingRepository, ChatRepository chatRepository, ChatService chatService, GoogleGeoService googleGeoService, JwtService jwtService) {
+    private final RefreshTokenRepository refreshTokenRepository;
+
+
+    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder, ListingRepository listingRepository, ChatRepository chatRepository, ChatService chatService, GoogleGeoService googleGeoService, JwtService jwtService, RefreshTokenRepository refreshTokenRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -47,6 +50,7 @@ public class UserController {
         this.chatService = chatService;
         this.googleGeoService = googleGeoService;
         this.jwtService = jwtService;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @GetMapping("/me")
@@ -59,14 +63,15 @@ public class UserController {
         UserResponse userResponse = new UserResponse(
                 currentUser.getId(),
                 currentUser.getEmail(),
-                currentUser.getPassword(),
                 currentUser.getFirstName(),
                 currentUser.getLastName(),
                 currentUser.getFavourites().stream().map(Listing::getId).toList(),
-                currentUser.getListings().stream().map(Listing::getId).toList()
+                currentUser.getListings().stream().map(Listing::getId).toList(),
+                currentUser.isOnboardingComplete()
         );
         return ResponseEntity.ok(userResponse);
     }
+
     @PatchMapping("/me/onboarding")
     public ResponseEntity<?> completeOnboarding(@RequestBody CompleteOnboardingDto body){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -97,6 +102,7 @@ public class UserController {
                 currentUser.getLatitude(),
                 currentUser.getLongitude(),
                 currentUser.isOnboardingComplete()
+
         ));
 
 

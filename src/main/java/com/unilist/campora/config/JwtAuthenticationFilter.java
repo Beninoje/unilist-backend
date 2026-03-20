@@ -65,8 +65,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (userEmail != null && auth == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-//                Optional<User> user = userRepository.findByEmail(userEmail);
-//                CustomJwtUser customUser = new CustomJwtUser(user);
                 if (!jwtService.isTokenValid(jwt, userDetails)) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("Invalid or expired JWT");

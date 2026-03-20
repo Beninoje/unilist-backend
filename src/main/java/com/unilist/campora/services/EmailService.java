@@ -26,7 +26,6 @@ public class EmailService {
                     .build();
 
             CreateEmailResponse response = resend.emails().send(params);
-            System.out.println("Email sent with ID: " + response.getId());
         }catch (ResendException e){
             e.printStackTrace();
         }
