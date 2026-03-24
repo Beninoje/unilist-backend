@@ -22,7 +22,10 @@ public class LoginResponse {
     private List<UUID> favourites;
     private Double latitude;
     private Double longitude;
+    private String postalCode;
+    private String campusType;
     private boolean onboardingComplete;
+    private String profileImage;
 
 
 }

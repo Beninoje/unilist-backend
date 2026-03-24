@@ -41,6 +41,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Column(name="profile_img")
+    private String profileImage;
+
     @Column(name="verification_code")
     private String verificationCode;
 

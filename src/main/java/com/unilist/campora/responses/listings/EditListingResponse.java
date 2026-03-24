@@ -1,4 +1,4 @@
-package com.unilist.campora.dto.listing;
+package com.unilist.campora.responses.listings;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EditListingDto {
+public class EditListingResponse {
     private UUID id;
     private String title;
     private String description;
@@ -21,6 +21,4 @@ public class EditListingDto {
     private String status;
     private String condition;
     private List<String> images;
-
-
 }

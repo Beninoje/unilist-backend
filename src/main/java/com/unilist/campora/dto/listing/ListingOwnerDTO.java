@@ -1,6 +1,8 @@
 package com.unilist.campora.dto.listing;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -10,6 +12,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ListingOwnerDTO {
     UUID listingId;
     String title;
@@ -18,6 +22,7 @@ public class ListingOwnerDTO {
     String description;
     List<String> images;
     String condition;
+    String status;
     LocalDateTime createdAt;
     UUID ownerId;
     String ownerFirstName;
@@ -29,44 +34,6 @@ public class ListingOwnerDTO {
     boolean existingChat;
     UUID chatId;
 
-    public ListingOwnerDTO(
-            UUID listingId,
-            String title,
-            Double price,
-            String category,
-            String description,
-            List<String> images,
-            String condition,
-            LocalDateTime createdAt,
-            UUID ownerId,
-            String ownerFirstName,
-            String ownerLastName,
-            String ownerEmail,
-            Double latitude,
-            Double longitude,
-            String campusType,
-            boolean existingChat,
-            UUID chatId
-    ) {
-        this.listingId = listingId;
-        this.title = title;
-        this.price = price;
-        this.category = category;
-        this.description = description;
-        this.images = images;
-        this.condition = condition;
-        this.createdAt = createdAt;
-        this.ownerId = ownerId;
-        this.ownerFirstName = ownerFirstName;
-        this.ownerLastName = ownerLastName;
-        this.ownerEmail = ownerEmail;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.campusType = campusType;
-        this.existingChat = existingChat;
-        this.chatId = chatId;
-    }
 
-    public ListingOwnerDTO() {}
 
 }

@@ -67,7 +67,13 @@ public class UserController {
                 currentUser.getLastName(),
                 currentUser.getFavourites().stream().map(Listing::getId).toList(),
                 currentUser.getListings().stream().map(Listing::getId).toList(),
-                currentUser.isOnboardingComplete()
+                currentUser.isOnboardingComplete(),
+                currentUser.getLatitude(),
+                currentUser.getLongitude(),
+                currentUser.getPostalCode(),
+                currentUser.getCampusType()
+
+
         );
         return ResponseEntity.ok(userResponse);
     }
@@ -116,7 +122,7 @@ public class UserController {
 
     }
 
-    @PutMapping("/update")
+    @PutMapping("/me/update")
     public ResponseEntity<?> updateUserProfile(@RequestBody UpdateUserDto body){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -136,13 +142,29 @@ public class UserController {
             currentUser.setPassword(passwordEncoder.encode(body.getPassword()));
         }
 
+        if(body.getProfileImage() != null){
+            currentUser.setProfileImage(body.getProfileImage().isBlank() ? null : body.getProfileImage());
+        }
+        if(body.getPostalCode() != null && !body.getPostalCode().isEmpty()){
+                double[] coor = googleGeoService.getCoordinatesFromPostalCode(body.getPostalCode());
+                currentUser.setLatitude(coor[0]);
+                currentUser.setLongitude(coor[1]);
+                currentUser.setPostalCode(body.getPostalCode());
+                currentUser.setCampusType(body.getCampusType());
+        }
+
+
         User updatedUser = userRepository.save(currentUser);
 
         return ResponseEntity.ok(
                 new UpdateUserResponse(
                         updatedUser.getFirstName(),
                         updatedUser.getLastName(),
-                        updatedUser.getPassword()
+                        updatedUser.getPostalCode(),
+                        updatedUser.getLatitude(),
+                        updatedUser.getLongitude(),
+                        updatedUser.getCampusType(),
+                        updatedUser.getProfileImage()
                 )
         );
 

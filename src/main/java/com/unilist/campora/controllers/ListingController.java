@@ -9,10 +9,12 @@ import com.unilist.campora.repository.ListingRepository;
 import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.responses.ListingResponse;
 import com.unilist.campora.responses.PageableListingResponse;
+import com.unilist.campora.responses.listings.EditListingResponse;
 import com.unilist.campora.services.ListingService;
 import com.unilist.campora.services.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -73,8 +75,11 @@ public class ListingController {
     }
 
     @PutMapping("/edit/{id}")
-    @CacheEvict(value = "listings", allEntries = true)
-    public ResponseEntity<?> editListing(@PathVariable UUID id, @RequestBody EditListingDto body){
+    @Caching(evict={
+            @CacheEvict(value="listings", allEntries=true),
+            @CacheEvict(value="listing_owner", key="#id.toString()")
+    })
+    public ResponseEntity<EditListingResponse> editListing(@PathVariable UUID id, @RequestBody EditListingDto body){
         Optional<Listing> currentListing = listingRepository.findById(id);
 
         Listing listing = currentListing.orElseThrow(() ->
@@ -108,10 +113,23 @@ public class ListingController {
         if (body.getImages() != null && !body.getImages().isEmpty()) {
             listing.setImages(body.getImages());
         }
+
+        if(body.getStatus() != null && !body.getStatus().isBlank()){
+            listing.setStatus(body.getStatus());
+        }
         listing.setUpdatedAt(LocalDateTime.now());
 
-        listingRepository.save(listing);
-        return ResponseEntity.ok("Listing successfully updated");
+        Listing saved = listingRepository.save(listing);
+        return ResponseEntity.ok(new EditListingResponse(
+                saved.getId(),
+                saved.getTitle(),
+                saved.getDescription(),
+                saved.getPrice(),
+                saved.getCategory(),
+                saved.getStatus(),
+                saved.getCondition(),
+                saved.getImages()
+        ));
 
     }
 
@@ -136,7 +154,6 @@ public class ListingController {
         listingRepository.delete(listing); // safe to delete now
         return ResponseEntity.ok("Listing successfully deleted");
     }
-
 
     @GetMapping("/all")
     public ResponseEntity<PageableListingResponse<ListingResponse>> getAllListings(

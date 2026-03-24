@@ -10,7 +10,11 @@ public record UserResponse(
         String lastName,
         List<UUID> favourites,
         List<UUID> listings,
-        boolean onboardingComplete
+        boolean onboardingComplete,
+        Double latitude,
+        Double longitude,
+        String postalCode,
+        String campusType
         ) {
 
 }

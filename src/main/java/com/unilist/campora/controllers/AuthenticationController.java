@@ -96,7 +96,11 @@ public class AuthenticationController {
                         user.getFavourites().stream().map(Listing::getId).toList(),
                         user.getLatitude(),
                         user.getLongitude(),
-                        user.isOnboardingComplete()
+                        user.getPostalCode(),
+                        user.getCampusType(),
+                        user.isOnboardingComplete(),
+                        user.getProfileImage()
+
             );
             return ResponseEntity.ok(loginResponse);
 
@@ -169,7 +173,10 @@ public class AuthenticationController {
                     user.getListings(),
                     user.getFavourites().stream().map(Listing::getId).toList(),
                     user.getLatitude(),
-                    user.getLongitude()
+                    user.getLongitude(),
+                    user.getPostalCode(),
+                    user.getCampusType()
+
             );
             return ResponseEntity.ok(registerResponse);
         } catch (RuntimeException e) {
@@ -213,11 +220,13 @@ public class AuthenticationController {
         authenticationService.sendVerificationCodeEmail(user);
         return ResponseEntity.ok("Verification code sent!");
     }
+
     @PostMapping("/verify-reset-code")
     public ResponseEntity<?> verifyResetCode(@RequestBody VerifyUserDto verifyUserDto) {
         authenticationService.verifyUser(verifyUserDto);
         return ResponseEntity.ok().build();
     }
+
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest req) {
         User user = userRepository.findByEmail(req.email()).orElseThrow(() -> new RuntimeException("User does not exist!"));

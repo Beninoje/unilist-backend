@@ -175,6 +175,7 @@ public class ChatController {
                 .sender(buyer)
                 .content(incomingMsg.getContent())
                 .isInitial(true)
+                .read(false)
                 .createdAt(Instant.now())
                 .build();
 
