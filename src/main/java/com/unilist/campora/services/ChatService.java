@@ -27,6 +27,7 @@ public class ChatService {
                 .otherUserId(otherUser.getId())
                 .otherFirstName(otherUser.getFirstName())
                 .otherLastName(otherUser.getLastName())
+                .otherUserProfileImage(otherUser.getProfileImage())
                 .createdAt(lastMessage != null ? lastMessage.getCreatedAt() : chat.getCreatedAt())
                 .lastMessage(lastContent)
                 .listingId(chat.getListingId())

@@ -17,6 +17,7 @@ public class FetchChatByIdDto {
     private String otherFirstName;
     private String otherLastName;
     private UUID otherUserId;
+    private String otherUserProfileImage;
     private UUID listingId;
     private List<String> listingImages;
     private String listingName;

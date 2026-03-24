@@ -220,6 +220,7 @@ public class ChatController {
                 otherUser.getFirstName(),
                 otherUser.getLastName(),
                 otherUser.getId(),
+                otherUser.getProfileImage(),
                 listing.getId(),
                 listing.getImages(),
                 listing.getTitle(),
