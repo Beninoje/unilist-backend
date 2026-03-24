@@ -18,4 +18,6 @@ public interface ListingRepository extends JpaRepository<Listing, UUID> {
     + "LOWER(l.title) LIKE LOWER(CONCAT('%',:query, '%')) OR "
     + "LOWER(l.category) LIKE LOWER(CONCAT('%',:query, '%'))")
     List<Listing> findListingsByQuery(String query);
+
+    List<Listing> findListingsByCategory(String query);
 }

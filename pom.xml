@@ -8,11 +8,11 @@
 		<version>3.5.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.unilist</groupId>
+	<groupId>com.campora</groupId>
 	<artifactId>campora</artifactId>
 	<version>0.0.1-API</version>
-	<name>unilist-backend</name>
-	<description>Backend for unilist</description>
+	<name>campora-backend</name>
+	<description>Backend for campora</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -104,6 +104,10 @@
             <groupId>com.resend</groupId>
             <artifactId>resend-java</artifactId>
             <version>LATEST</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
     </dependencies>
