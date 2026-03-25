@@ -3,6 +3,7 @@ package com.unilist.campora.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class LoginResponse {
     private UUID id;
     private String token;
@@ -26,6 +28,7 @@ public class LoginResponse {
     private String campusType;
     private boolean onboardingComplete;
     private String profileImage;
+    private boolean otpVerified;
 
 
 }

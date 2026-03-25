@@ -62,6 +62,9 @@ public class User implements UserDetails {
     @Column(name="user_enabled")
     private boolean enabled;
 
+    @Column(name="otp_verified")
+    private boolean optVerified;
+
     @Column(name="onboarding_completed")
     private boolean onboardingComplete;
 
@@ -110,6 +113,9 @@ public class User implements UserDetails {
     @Override
     public String getPassword() {
         return password;
+    }
+    public boolean getOtpVerified(){
+        return optVerified;
     }
 
 

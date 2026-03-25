@@ -4,11 +4,15 @@ import com.resend.core.exception.ResendException;
 import com.unilist.campora.dto.LoginUserDto;
 import com.unilist.campora.dto.RegisterUserDto;
 import com.unilist.campora.dto.VerifyUserDto;
+import com.unilist.campora.exceptions.OtpRequiredException;
+import com.unilist.campora.model.Listing;
 import com.unilist.campora.model.RefreshToken;
 import com.unilist.campora.model.User;
 import com.unilist.campora.repository.RefreshTokenRepository;
 import com.unilist.campora.repository.UserRepository;
+import com.unilist.campora.responses.LoginResponse;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,14 +35,16 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final TemplateEngine templateEngine;
+    private final JwtService jwtService;
 
-    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, EmailService emailService, RefreshTokenRepository refreshTokenRepository, TemplateEngine templateEngine) {
+    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, EmailService emailService, RefreshTokenRepository refreshTokenRepository, TemplateEngine templateEngine, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.emailService = emailService;
         this.refreshTokenRepository = refreshTokenRepository;
         this.templateEngine = templateEngine;
+        this.jwtService = jwtService;
     }
 
     public User signUp(RegisterUserDto input) {
@@ -47,20 +53,20 @@ public class AuthenticationService {
         user.setPassword(encodedPassword);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));
-        user.setEnabled(false);
+        user.setOptVerified(false);
         user.setOnboardingComplete(false);
         sendVerificationCodeEmail(user);
         return userRepository.save(user);
     }
 
     public User authenticate(LoginUserDto input){
-        try {
+
             User user = userRepository.findByEmail(input.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
-            if(!user.isEnabled()){
-                throw new RuntimeException("Account is not verified, please verify your account");
+            if(!user.isOptVerified()){
+                return user;
             }
-
+        try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             input.getEmail(),
@@ -70,9 +76,10 @@ public class AuthenticationService {
 
             return user;
 
+        } catch (BadCredentialsException e) {
+            throw new RuntimeException("Email or password are incorrect");
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Authentication failed: " + e.getMessage());
+            throw new RuntimeException("Authentication failed");
         }
     }
 
@@ -84,7 +91,7 @@ public class AuthenticationService {
                 throw new RuntimeException("Verification code expired");
             }
             if(user.getVerificationCode().equals(input.getVerificationCode())){
-                user.setEnabled(true);
+                user.setOptVerified(true);
                 user.setVerificationCode(null);
                 user.setVerificationExpiresAt(null);
 
@@ -102,7 +109,7 @@ public class AuthenticationService {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if(optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (user.isEnabled()) {
+            if (user.isOptVerified()) {
                 throw new RuntimeException("Account is already verified");
             }
             user.setVerificationCode(generateVerificationCode());
