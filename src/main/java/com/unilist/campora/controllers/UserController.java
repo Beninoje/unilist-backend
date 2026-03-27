@@ -75,8 +75,6 @@ public class UserController {
                 currentUser.getCampusType(),
                 currentUser.getOtpVerified(),
                 currentUser.getProfileImage()
-
-
         );
         return ResponseEntity.ok(userResponse);
     }

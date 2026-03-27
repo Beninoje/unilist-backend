@@ -76,6 +76,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Listing> listings;
 
+    @JsonManagedReference
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<Report> reports;
+
     @ManyToMany
     @JoinTable(
             name = "user_favourites",

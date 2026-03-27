@@ -35,7 +35,7 @@ public class Listing {
 
     private String category;
 
-    private String status; // e.g. "active", "sold", "draft"
+    private String status;
 
     private String condition;
 
