@@ -13,10 +13,9 @@ public class ChatService {
     public FetchAllChatsByCurrentUserResponseDto mapToDto(Chat chat, User currUser){
         User otherUser = chat.getBuyer().equals(currUser) ? chat.getSeller() : chat.getBuyer();
 
-        Message lastMessage = null;
-        if (!chat.getMessages().isEmpty()) {
-            lastMessage = chat.getMessages().get(chat.getMessages().size() - 1);
-        }
+        Message lastMessage = chat.getMessages().stream()
+                .max(Comparator.comparing(Message::getCreatedAt))
+                .orElse(null);
         String lastContent = lastMessage != null ? lastMessage.getContent() : null;
 
         return FetchAllChatsByCurrentUserResponseDto.builder()

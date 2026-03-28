@@ -11,6 +11,8 @@ import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.responses.CompletedOnboardingResponse;
 import com.unilist.campora.responses.UpdateUserResponse;
 import com.unilist.campora.responses.UserResponse;
+import com.unilist.campora.responses.listings.ListingResponse;
+import com.unilist.campora.responses.users.ViewUserResponse;
 import com.unilist.campora.services.ChatService;
 import com.unilist.campora.services.GoogleGeoService;
 import com.unilist.campora.services.JwtService;
@@ -259,6 +261,30 @@ public class UserController {
                 ))
                 .map(chat -> chatService.mapToDto(chat, currUser))
                 .toList();
+    }
+
+    @GetMapping("/view/{id}")
+    public ResponseEntity<ViewUserResponse> viewUser(@PathVariable UUID id){
+        User user = userRepository.findById(id).orElseThrow(()-> new RuntimeException("User not found"));
+        return ResponseEntity.ok(new ViewUserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getListings().stream().map(listing -> new ListingResponse(
+                    listing.getId(),
+                        listing.getTitle(),
+                        listing.getPrice(),
+                        listing.getCategory(),
+                        listing.getStatus(),
+                        listing.getCondition(),
+                        listing.getImages(),
+                        listing.getCreatedAt()
+                )).toList(),
+                user.getCampusType(),
+                user.getProfileImage(),
+                user.isEnabled()
+        ));
     }
 
 }

@@ -1,9 +1,10 @@
 package com.unilist.campora.utils.enums;
 
 public enum ReportReason {
-    INAPPROPRIATE,
-    FAKE,
     SPAM,
     SCAM,
+    HARASSMENT,
+    INAPPROPRIATE_CONTENT,
+    FAKE_ACCOUNT,
     OTHER
 }

@@ -10,6 +10,7 @@ import com.unilist.campora.repository.ReportRepository;
 import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.services.UserService;
 import com.unilist.campora.utils.enums.ReportStatus;
+import com.unilist.campora.utils.enums.ReportTargetType;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RequestMapping("/reports")
@@ -46,25 +48,43 @@ public class ReportController {
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found in DB"));
 
-        listingRepository.findById(req.listingId())
-                .orElseThrow(()-> new RuntimeException("Listing not found"));
-        boolean isCurrUserListing = currentUser.getListings().stream().anyMatch(listing -> listing.getId().equals(req.listingId()));
+
+
+        boolean isCurrUserListing = currentUser.getListings().stream().anyMatch(listing -> listing.getId().equals(req.getListingId()));
+
         if(isCurrUserListing){
             return ResponseEntity.badRequest().body("You cannot report your listing");
         }
-        boolean alreadyReported = currentUser.getReports().stream()
-                .anyMatch(report -> report.getListingId().equals(req.listingId()));
-        System.out.println("User already reported: "+alreadyReported);
 
-        if(alreadyReported){
+        boolean alreadyReportedListing = currentUser.getReports().stream()
+                .anyMatch(report -> report.getReporterId().equals(req.getListingId()));
+        boolean alreadyReportedUser = currentUser.getReports().stream()
+                .anyMatch(report -> report.getTargetId().equals(req.getTargetUserId()));
+
+        if(alreadyReportedListing){
             return ResponseEntity.badRequest().body("You have already reported this listing");
+        }
+        if(alreadyReportedUser){
+            return ResponseEntity.badRequest().body("You have already reported this user");
+
+        }
+        UUID targetId;
+        if(req.getTargetType() == ReportTargetType.USER){
+            targetId = req.getTargetUserId();
+        }else if(req.getTargetType() == ReportTargetType.LISTING){
+            listingRepository.findById(req.getListingId())
+                    .orElseThrow(()-> new RuntimeException("Listing not found"));
+            targetId = req.getListingId();
+        }else {
+            throw new IllegalArgumentException("Invalid targetType or missing targetId");
         }
 
         Report report = new Report();
-        report.setReporterId(req.reporterId());
-        report.setListingId(req.listingId());
-        report.setReason(req.reason());
-        report.setDescription(req.description());
+        report.setTargetType(req.getTargetType());
+        report.setReporterId(req.getReporterId());
+        report.setTargetId(targetId);
+        report.setReason(req.getReason());
+        report.setDescription(req.getDescription());
         report.setStatus(ReportStatus.PENDING);
         report.setUser(currentUser);
         reportRepository.save(report);

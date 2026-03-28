@@ -81,10 +81,6 @@ public class ChatController {
 
         messageRepository.save(message);
 
-        chat.setLastMessage(message.getContent());
-        chat.setLastMessageCreatedAt(Instant.now());
-        chatRepository.save(chat);
-
         UUID replyToId = message.getReplyTo() != null ? message.getReplyTo().getId() : null;
         String replyToContent = message.getReplyTo() != null ? message.getReplyTo().getContent() : null;
         UUID replyToSenderId = message.getReplyTo() != null ? message.getSender().getId() : null;
