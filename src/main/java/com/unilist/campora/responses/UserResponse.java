@@ -16,7 +16,8 @@ public record UserResponse(
         String postalCode,
         String campusType,
         boolean optVerified,
-        String profileImage
+        String profileImage,
+        boolean enabled
         ) {
 
 }

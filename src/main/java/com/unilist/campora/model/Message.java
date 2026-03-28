@@ -40,8 +40,6 @@ public class Message {
     @JoinColumn(name="reply_to_message_id")
     private Message replyTo;
 
-    private Boolean isInitial = false;
-
     @Column(name="read",nullable = false)
     private Boolean read = false;
 

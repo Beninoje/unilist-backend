@@ -91,7 +91,8 @@ public class AuthenticationController {
                         user.getCampusType(),
                         user.isOnboardingComplete(),
                         user.getProfileImage(),
-                        user.getOtpVerified()
+                        user.getOtpVerified(),
+                        user.isEnabled()
                 ));
 
             }
@@ -131,7 +132,8 @@ public class AuthenticationController {
                     user.getCampusType(),
                     user.isOnboardingComplete(),
                     user.getProfileImage(),
-                    user.getOtpVerified()
+                    user.getOtpVerified(),
+                    user.isEnabled()
             );
             return ResponseEntity.ok(loginResponse);
         }

@@ -74,7 +74,8 @@ public class UserController {
                 currentUser.getPostalCode(),
                 currentUser.getCampusType(),
                 currentUser.getOtpVerified(),
-                currentUser.getProfileImage()
+                currentUser.getProfileImage(),
+                currentUser.isEnabled()
         );
         return ResponseEntity.ok(userResponse);
     }
@@ -244,18 +245,20 @@ public class UserController {
 
         User currUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found in DB"));
-        List<Chat> chats = chatRepository.findAllByBuyerOrSeller(currUser);
-        return chats.stream()
-                .sorted(
-                        Comparator.comparing((Chat chat) ->
-                                chat.getMessages().stream()
-                                        .map(Message::getCreatedAt)
-                                        .max(Comparator.naturalOrder())
-                                        .orElse(chat.getCreatedAt())
-                        ).reversed())
+
+        return chatRepository.findAllByBuyerOrSeller(currUser).stream()
+                .sorted(Comparator.comparing(
+                            chat -> {
+                                Message lastMessage = chat.getMessages().stream()
+                                        .max(Comparator.comparing(Message::getCreatedAt))
+                                        .orElse(null);
+                                return lastMessage != null ? lastMessage.getCreatedAt() : chat.getCreatedAt();
+                            },
+                        Comparator.nullsLast(Comparator.naturalOrder())
+
+                ))
                 .map(chat -> chatService.mapToDto(chat, currUser))
                 .toList();
-
     }
 
 }

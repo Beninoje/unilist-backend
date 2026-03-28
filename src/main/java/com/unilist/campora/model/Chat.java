@@ -48,6 +48,12 @@ public class Chat {
     @JsonManagedReference
     private List<Message> messages;
 
+    @Column(name="lastMessage")
+    private String lastMessage;
+
+    @Column(name="lastMessageCreatedAt")
+    private Instant lastMessageCreatedAt;
+
     @Column(name="created_at")
     private Instant createdAt;
 

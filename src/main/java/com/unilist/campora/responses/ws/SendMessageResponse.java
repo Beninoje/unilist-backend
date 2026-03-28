@@ -25,7 +25,6 @@ public class SendMessageResponse {
     private UUID replyToSenderId;
     private String replyToSenderFirstName;
     private String replyToSenderLastName;
-    private Boolean isInitial;
     private boolean read;
     private Instant createdAt;
 }

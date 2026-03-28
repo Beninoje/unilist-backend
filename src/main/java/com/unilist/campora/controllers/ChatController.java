@@ -75,12 +75,16 @@ public class ChatController {
                         .sender(user)
                         .content(incomingMessage.getContent())
                         .replyTo(replyTo)
-                        .isInitial(false)
                         .read(false)
                         .createdAt(Instant.now())
                         .build();
 
         messageRepository.save(message);
+
+        chat.setLastMessage(message.getContent());
+        chat.setLastMessageCreatedAt(Instant.now());
+        chatRepository.save(chat);
+
         UUID replyToId = message.getReplyTo() != null ? message.getReplyTo().getId() : null;
         String replyToContent = message.getReplyTo() != null ? message.getReplyTo().getContent() : null;
         UUID replyToSenderId = message.getReplyTo() != null ? message.getSender().getId() : null;
@@ -98,7 +102,6 @@ public class ChatController {
                 replyToSenderId,
                 replyToSenderFirstName,
                 replyToSenderLastName,
-                message.getIsInitial(),
                 message.getRead(),
                 message.getCreatedAt()
         );
@@ -113,6 +116,7 @@ public class ChatController {
             messageTemplate.convertAndSend("/topic/user/" + chat.getSeller().getId() + "/chat", sendMessageResponse);
             messageTemplate.convertAndSend("/topic/user/" + chat.getSeller().getId() + "/unread", sellerUnread);
         }
+
         messageTemplate.convertAndSend(
                 "/topic/chat/" + chat.getId(),
                 sendMessageResponse
@@ -174,7 +178,6 @@ public class ChatController {
                 .chat(chat)
                 .sender(buyer)
                 .content(incomingMsg.getContent())
-                .isInitial(true)
                 .read(false)
                 .createdAt(Instant.now())
                 .build();
@@ -186,8 +189,8 @@ public class ChatController {
                 buyer.getId(),
                 message.getContent(),
                 chat.getListingId(),
-                null,null,null,null,null,
-                true,
+                null,null,null,null,
+                null,
                 false,
                 message.getCreatedAt()
         );

@@ -29,6 +29,7 @@ public class LoginResponse {
     private boolean onboardingComplete;
     private String profileImage;
     private boolean otpVerified;
+    private boolean enabled;
 
 
 }
