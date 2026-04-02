@@ -22,5 +22,6 @@ public class FetchChatByIdDto {
     private List<String> listingImages;
     private String listingName;
     private String listingStatus;
+    private Double listingPrice;
     private List<MessageResponseDto> messages;
 }

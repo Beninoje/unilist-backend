@@ -12,6 +12,7 @@ import com.unilist.campora.repository.ChatRepository;
 import com.unilist.campora.repository.ListingRepository;
 import com.unilist.campora.repository.MessageRepository;
 import com.unilist.campora.repository.UserRepository;
+import com.unilist.campora.responses.ws.SendInitialMessageResponse;
 import com.unilist.campora.responses.ws.SendMessageResponse;
 import com.unilist.campora.services.ChatService;
 import com.unilist.campora.services.UserService;
@@ -97,13 +98,23 @@ public class ChatController {
                 replyToSenderFirstName,
                 replyToSenderLastName,
                 message.getRead(),
-                message.getCreatedAt()
+                message.getCreatedAt(),
+                chat.getBuyer().getId(),
+                chat.getBuyer().getFirstName(),
+                chat.getBuyer().getLastName(),
+                chat.getBuyer().getProfileImage(),
+                chat.getSeller().getId(),
+                chat.getSeller().getFirstName(),
+                chat.getSeller().getLastName(),
+                chat.getSeller().getProfileImage()
         );
         // Logic to send push notification
 
         // Send message to buyer
         if (!chat.getBuyer().getId().equals(user.getId())) {
             List<Object[]> buyerUnread = messageRepository.getUnreadCountsPerChat(chat.getBuyer().getId());
+            chat.setBuyerDeleted(false);
+            chatRepository.save(chat);
             messageTemplate.convertAndSend("/topic/user/" + chat.getBuyer().getId() + "/chat", sendMessageResponse);
             messageTemplate.convertAndSend("/topic/user/" + chat.getBuyer().getId() + "/unread", buyerUnread);
             User buyer = chat.getBuyer();
@@ -123,6 +134,8 @@ public class ChatController {
         // Send message to seller
         if (!chat.getSeller().getId().equals(user.getId())) {
             List<Object[]> sellerUnread = messageRepository.getUnreadCountsPerChat(chat.getSeller().getId());
+            chat.setSellerDeleted(false);
+            chatRepository.save(chat);
             messageTemplate.convertAndSend("/topic/user/" + chat.getSeller().getId() + "/chat", sendMessageResponse);
             messageTemplate.convertAndSend("/topic/user/" + chat.getSeller().getId() + "/unread", sellerUnread);
             User seller = chat.getSeller();
@@ -159,8 +172,7 @@ public class ChatController {
 
         messageRepository.markMessageAsRead(chatId,readerId);
         List<Object[]> updatedUnread = messageRepository.getUnreadCountsPerChat(readerId);
-        System.out.println("Publishing unread to: /topic/user/" + readerId + "/unread");
-        System.out.println("Unread data: " + updatedUnread.size() + " chats");
+
         messageTemplate.convertAndSend(
                 "/topic/user/" + readerId + "/unread",
                 updatedUnread
@@ -205,7 +217,7 @@ public class ChatController {
                 .build();
 
         messageRepository.save(message);
-        SendMessageResponse msgRes = new SendMessageResponse(
+        SendInitialMessageResponse msgRes = new SendInitialMessageResponse(
                 chat.getId(),
                 message.getId(),
                 buyer.getId(),
@@ -246,7 +258,8 @@ public class ChatController {
 
         Chat chat = chatRepository.findChatForUser(id,currentUser.getId())
                 .orElseThrow(()-> new IllegalArgumentException("Chat does not exist or access denied"));
-        Listing listing = listingRepository.findById(chat.getListingId()).orElseThrow(() -> new IllegalArgumentException("Listing does not exist anymore"));
+        Optional<Listing> listingOpt = listingRepository.findById(chat.getListingId());
+        Listing listing = listingOpt.orElse(null);
         User otherUser;
         if(chat.getBuyer().getId().equals(currentUser.getId())){
             otherUser = chat.getSeller();
@@ -260,13 +273,36 @@ public class ChatController {
                 otherUser.getLastName(),
                 otherUser.getId(),
                 otherUser.getProfileImage(),
-                listing.getId(),
-                listing.getImages(),
-                listing.getTitle(),
-                listing.getStatus(),
+                listing != null ? listing.getId() : null,
+                listing != null ? listing.getImages() : null,
+                listing != null ? listing.getTitle() : "Listing no longer available",
+                listing != null ? listing.getStatus() : "DELETED",
+                listing != null ? listing.getPrice() : null,
                 messageService.getAllMessagesByChat(chat)
 
         ));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteChat(@PathVariable UUID id){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+        Chat chat = chatRepository.findById(id).orElseThrow(()-> new RuntimeException("Chat not found!"));
+
+        if(chat.getBuyer().getId().equals(currentUser.getId())){
+            chat.setBuyerDeleted(true);
+        }else if(chat.getSeller().getId().equals(currentUser.getId())){
+            chat.setSellerDeleted(true);
+        }else{
+            throw new RuntimeException("Unauthorized");
+        }
+
+        chatRepository.save(chat);
+
+        return ResponseEntity.ok("Chat has been deleted!");
+
     }
 
 

@@ -274,7 +274,7 @@ public class UserController {
         User currUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found in DB"));
 
-        return chatRepository.findAllByBuyerOrSeller(currUser).stream()
+        return chatRepository.findAllVisibleChats(currUser.getId()).stream()
                 .sorted(Comparator.comparing(
                             chat -> {
                                 Message lastMessage = chat.getMessages().stream()
@@ -283,7 +283,6 @@ public class UserController {
                                 return lastMessage != null ? lastMessage.getCreatedAt() : chat.getCreatedAt();
                             },
                         Comparator.nullsLast(Comparator.naturalOrder())
-
                 ))
                 .map(chat -> chatService.mapToDto(chat, currUser))
                 .toList();

@@ -48,6 +48,12 @@ public class Chat {
     @JsonManagedReference
     private List<Message> messages;
 
+    @Column(name="buyer_deleted", nullable = false)
+    private boolean buyerDeleted = false;
+
+    @Column(name="seller_deleted",nullable = false)
+    private boolean sellerDeleted = false;
+
     @Column(name="created_at")
     private Instant createdAt;
 
