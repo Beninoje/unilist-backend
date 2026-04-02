@@ -70,7 +70,6 @@ public class AuthenticationController {
         try {
             User user = authenticationService.authenticate(loginUserDto);
 
-
             if (!user.getOtpVerified()) {
                 user.setVerificationCode(authenticationService.generateVerificationCode());
                 user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));

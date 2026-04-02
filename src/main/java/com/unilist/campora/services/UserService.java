@@ -39,7 +39,7 @@ public class UserService {
         return user.getFavourites();
     }
 
-    @Cacheable(value="listing_owner", key="#listingId")
+    @Cacheable(value="listing", key="#listingId")
     public ListingOwnerDTO getListingOwner(UUID listingId, UUID buyerId){
         Listing listing = listingService.getListingById(listingId);
         User owner = listing.getUser();
@@ -68,6 +68,7 @@ public class UserService {
                 owner.getFirstName(),
                 owner.getLastName(),
                 owner.getEmail(),
+                owner.getProfileImage(),
                 owner.getLatitude(),
                 owner.getLongitude(),
                 owner.getCampusType(),

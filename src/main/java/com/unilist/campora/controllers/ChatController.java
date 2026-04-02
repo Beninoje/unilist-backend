@@ -3,18 +3,17 @@ package com.unilist.campora.controllers;
 import com.unilist.campora.dto.chat.ChatMessageDto;
 import com.unilist.campora.dto.chat.CreateChatDto;
 import com.unilist.campora.dto.chat.FetchChatByIdDto;
+import com.unilist.campora.dto.notifications.SendPushNotification;
 import com.unilist.campora.dto.ws.ReadChatDto;
 import com.unilist.campora.dto.ws.TypingEventDto;
 import com.unilist.campora.dto.ws.UnreadCountDto;
-import com.unilist.campora.model.Chat;
-import com.unilist.campora.model.Listing;
-import com.unilist.campora.model.Message;
-import com.unilist.campora.model.User;
+import com.unilist.campora.model.*;
 import com.unilist.campora.repository.ChatRepository;
 import com.unilist.campora.repository.ListingRepository;
 import com.unilist.campora.repository.MessageRepository;
 import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.responses.ws.SendMessageResponse;
+import com.unilist.campora.services.ChatService;
 import com.unilist.campora.services.UserService;
 import com.unilist.campora.services.chat.MessageService;
 import org.springframework.cache.annotation.CacheEvict;
@@ -26,10 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/chats")
@@ -40,14 +36,16 @@ public class ChatController {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
     private final ListingRepository listingRepository;
+    private final ChatService chatService;
 
-    public ChatController(SimpMessagingTemplate messageTemplate, MessageService messageService, MessageRepository messageRepository, ChatRepository chatRepository, UserRepository userRepository, ListingRepository listingRepository) {
+    public ChatController(SimpMessagingTemplate messageTemplate, MessageService messageService, MessageRepository messageRepository, ChatRepository chatRepository, UserRepository userRepository, ListingRepository listingRepository, ChatService chatService) {
         this.messageTemplate = messageTemplate;
         this.messageService = messageService;
         this.messageRepository = messageRepository;
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
         this.listingRepository = listingRepository;
+        this.chatService = chatService;
     }
 
     @MessageMapping("/chat.sendMessage")
@@ -101,16 +99,44 @@ public class ChatController {
                 message.getRead(),
                 message.getCreatedAt()
         );
+        // Logic to send push notification
 
+        // Send message to buyer
         if (!chat.getBuyer().getId().equals(user.getId())) {
             List<Object[]> buyerUnread = messageRepository.getUnreadCountsPerChat(chat.getBuyer().getId());
             messageTemplate.convertAndSend("/topic/user/" + chat.getBuyer().getId() + "/chat", sendMessageResponse);
             messageTemplate.convertAndSend("/topic/user/" + chat.getBuyer().getId() + "/unread", buyerUnread);
+            User buyer = chat.getBuyer();
+            String pushToken = buyer.getPushTokens().stream()
+                    .sorted(Comparator.comparing(PushToken::getCreatedAt).reversed())
+                    .map(PushToken::getPushToken)
+                    .findFirst()
+                    .orElse(null);
+
+            SendPushNotification sendPushNotification = new SendPushNotification(
+                    pushToken,
+                    buyer.getFirstName(),
+                    sendMessageResponse.getContent()
+            );
+            chatService.sendPushNotification(sendPushNotification);
         }
+        // Send message to seller
         if (!chat.getSeller().getId().equals(user.getId())) {
             List<Object[]> sellerUnread = messageRepository.getUnreadCountsPerChat(chat.getSeller().getId());
             messageTemplate.convertAndSend("/topic/user/" + chat.getSeller().getId() + "/chat", sendMessageResponse);
             messageTemplate.convertAndSend("/topic/user/" + chat.getSeller().getId() + "/unread", sellerUnread);
+            User seller = chat.getSeller();
+            String pushToken = seller.getPushTokens().stream()
+                    .sorted(Comparator.comparing(PushToken::getCreatedAt).reversed())
+                    .map(PushToken::getPushToken)
+                    .findFirst()
+                    .orElse(null);
+            SendPushNotification sendPushNotification = new SendPushNotification(
+                    pushToken,
+                    seller.getFirstName(),
+                    sendMessageResponse.getContent()
+            );
+            chatService.sendPushNotification(sendPushNotification);
         }
 
         messageTemplate.convertAndSend(
@@ -191,7 +217,21 @@ public class ChatController {
                 message.getCreatedAt()
         );
 
+
         messageTemplate.convertAndSend("/topic/user/"+seller.getId()+"/chat",msgRes);
+
+        String pushToken = seller.getPushTokens().stream()
+                .sorted(Comparator.comparing(PushToken::getCreatedAt).reversed())
+                .map(PushToken::getPushToken)
+                .findFirst()
+                .orElse(null);
+        SendPushNotification sendPushNotification = new SendPushNotification(
+                pushToken,
+                seller.getFirstName(),
+                message.getContent()
+        );
+
+        chatService.sendPushNotification(sendPushNotification);
 
         return ResponseEntity.ok(chat.getId());
     }

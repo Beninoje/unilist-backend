@@ -4,6 +4,7 @@ import com.unilist.campora.dto.CompleteOnboardingDto;
 import com.unilist.campora.dto.UpdateUserDto;
 import com.unilist.campora.dto.chat.FetchAllChatsByCurrentUserResponseDto;
 import com.unilist.campora.model.*;
+import com.unilist.campora.records.users.SavePushTokenDto;
 import com.unilist.campora.repository.ChatRepository;
 import com.unilist.campora.repository.ListingRepository;
 import com.unilist.campora.repository.RefreshTokenRepository;
@@ -18,6 +19,7 @@ import com.unilist.campora.services.GoogleGeoService;
 import com.unilist.campora.services.JwtService;
 import com.unilist.campora.services.UserService;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -125,6 +127,30 @@ public class UserController {
 
     }
 
+    @PostMapping("/me/save-push-token")
+    public ResponseEntity<?> savePushToken(@RequestBody SavePushTokenDto req){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+
+        Set<PushToken> tokens = currentUser.getPushTokens();
+        if(tokens == null){
+            tokens = new HashSet<>();
+        }
+        PushToken newToken = new PushToken();
+        newToken.setPushToken(req.pushToken());
+        newToken.setCreatedAt(Instant.now());
+        newToken.setUser(currentUser);
+        tokens.removeIf(t -> t.getPushToken().equals(newToken.getPushToken()));
+        tokens.add(newToken);
+        currentUser.setPushTokens(tokens);
+
+        userRepository.save(currentUser);
+        return ResponseEntity.ok("Push token saved!");
+    }
+
+    @CacheEvict(value = "listing", allEntries = true)
     @PutMapping("/me/update")
     public ResponseEntity<?> updateUserProfile(@RequestBody UpdateUserDto body){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();

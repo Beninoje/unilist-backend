@@ -28,6 +28,7 @@ public class ListingOwnerDTO {
     String ownerFirstName;
     String ownerLastName;
     String ownerEmail;
+    String ownerProfileImage;
     Double latitude;
     Double longitude;
     String campusType;

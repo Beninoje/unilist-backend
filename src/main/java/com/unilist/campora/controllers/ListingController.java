@@ -77,7 +77,7 @@ public class ListingController {
     @PutMapping("/edit/{id}")
     @Caching(evict={
             @CacheEvict(value="listings", allEntries=true),
-            @CacheEvict(value="listing_owner", key="#id.toString()")
+            @CacheEvict(value="listing", key="#id.toString()")
     })
     public ResponseEntity<EditListingResponse> editListing(@PathVariable UUID id, @RequestBody EditListingDto body){
         Optional<Listing> currentListing = listingRepository.findById(id);
