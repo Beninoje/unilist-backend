@@ -55,6 +55,10 @@ public class AuthenticationController {
             error.put("email", "That email is already taken");
             return ResponseEntity.badRequest().body(error);
         }
+        if(!registerUserDto.getEmail().matches("^[^@\\s]+@lakeheadu\\.ca$")){
+            error.put("validate","Your must be a registered Lakehead student");
+            return ResponseEntity.badRequest().body(error);
+        }
         if(registerUserDto.getPassword().length() < 12){
             error.put("password", "Password must be greater that 8 characters");
             return ResponseEntity.badRequest().body(error);
