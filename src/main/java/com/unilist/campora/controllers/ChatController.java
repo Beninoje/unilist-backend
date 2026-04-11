@@ -182,7 +182,7 @@ public class ChatController {
 
 
     @PostMapping("/send")
-    @CacheEvict(value="listing_owner", key="#incomingMsg.listingId")
+    @CacheEvict(value="listing", key="#incomingMsg.listingId")
     public ResponseEntity<?> createChat(@RequestBody CreateChatDto incomingMsg){
         User buyer = userRepository.findById(incomingMsg.getSenderId())
                 .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));

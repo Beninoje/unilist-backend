@@ -66,21 +66,19 @@ public class AuthenticationService {
             if(!user.isOptVerified()){
                 return user;
             }
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            input.getEmail(),
-                            input.getPassword()
-                    )
-            );
+            if(!passwordEncoder.matches(input.getPassword(), user.getPassword())){
+                throw new RuntimeException("Email or password are incorrect");
+            }
+//            authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(
+//                            input.getEmail(),
+//                            input.getPassword()
+//                    )
+//            );
 
             return user;
 
-        } catch (BadCredentialsException e) {
-            throw new RuntimeException("Email or password are incorrect");
-        } catch (Exception e) {
-            throw new RuntimeException("Authentication failed");
-        }
+
     }
 
     public User verifyUser(VerifyUserDto input){

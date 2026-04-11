@@ -43,9 +43,10 @@ public class ListingService {
                 listing.getImages(),
                 listing.getCategory(),
                 listing.getCondition(),
+                listing.getStatus(),
                 listing.getDescription(),
-                listing.getUser().getId()
-
+                listing.getUser().getId(),
+                listing.getCreatedAt()
         ));
         return new PageableListingResponse<>(mapped);
 
@@ -54,6 +55,24 @@ public class ListingService {
     public Listing getListingById(UUID id){
         return listingRepository.findById(id)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Listing not found"));
+    }
+
+    @Cacheable(value = "listing", key = "#listingId")
+    public ListingResponse getListing(UUID listingId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new RuntimeException("Listing not found"));
+        return new ListingResponse(
+                listing.getId(),
+                listing.getTitle(),
+                listing.getPrice(),
+                listing.getImages(),
+                listing.getCategory(),
+                listing.getCondition(),
+                listing.getStatus(),
+                listing.getDescription(),
+                listing.getUser().getId(),
+                listing.getCreatedAt()
+        );
     }
 
 }

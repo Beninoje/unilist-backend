@@ -5,6 +5,7 @@ import com.unilist.campora.dto.notifications.SendPushNotification;
 import com.unilist.campora.model.Chat;
 import com.unilist.campora.model.Message;
 import com.unilist.campora.model.User;
+import com.unilist.campora.repository.ChatRepository;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,13 +13,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ChatService {
+
+    private final ChatRepository chatRepository;
+
+    public ChatService(ChatRepository chatRepository) {
+        this.chatRepository = chatRepository;
+    }
 
     public FetchAllChatsByCurrentUserResponseDto mapToDto(Chat chat, User currUser){
         User otherUser = chat.getBuyer().equals(currUser) ? chat.getSeller() : chat.getBuyer();
@@ -63,5 +67,21 @@ public class ChatService {
             e.printStackTrace();
         }
 
+    }
+
+    public boolean chatExists(UUID buyerId, UUID sellerId, UUID listingId) {
+        return chatRepository.existsByBuyerIdAndSellerIdAndListingId(
+                buyerId,
+                sellerId,
+                listingId
+        );
+    }
+
+    public Chat getChat(UUID buyerId, UUID sellerId, UUID listingId) {
+        return chatRepository.findChatByBuyerIdAndSellerIdAndListingId(
+                buyerId,
+                sellerId,
+                listingId
+        );
     }
 }

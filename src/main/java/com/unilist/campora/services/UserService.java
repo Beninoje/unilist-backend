@@ -40,16 +40,16 @@ public class UserService {
     }
 
     @Cacheable(value="listing", key="#listingId")
-    public ListingOwnerDTO getListingOwner(UUID listingId, UUID buyerId){
+    public ListingOwnerDTO getListingOwner(UUID listingId, UUID currUserId){
         Listing listing = listingService.getListingById(listingId);
         User owner = listing.getUser();
         boolean chatExists = chatRepository.existsByBuyerIdAndSellerIdAndListingId(
-                buyerId,
+                currUserId,
                 owner.getId(),
                 listingId
         );
         Chat chat = chatRepository.findChatByBuyerIdAndSellerIdAndListingId(
-                buyerId,
+                currUserId,
                 owner.getId(),
                 listingId
         );
