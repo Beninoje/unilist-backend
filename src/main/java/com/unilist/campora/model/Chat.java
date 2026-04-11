@@ -57,6 +57,7 @@ public class Chat {
     @Column(name="created_at")
     private Instant createdAt;
 
+
     public Boolean hasUser(UUID userId){
         return (userId.equals(buyer.getId()) || userId.equals(seller.getId()));
     }
