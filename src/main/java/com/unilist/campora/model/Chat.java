@@ -49,15 +49,15 @@ public class Chat {
     private List<Message> messages;
 
     @Column(name="buyer_deleted", nullable = false)
-    private boolean buyerDeleted = false;
+    private Boolean buyerDeleted = false;
 
     @Column(name="seller_deleted",nullable = false)
-    private boolean sellerDeleted = false;
+    private Boolean sellerDeleted = false;
 
     @Column(name="created_at")
     private Instant createdAt;
 
-    public boolean hasUser(UUID userId){
+    public Boolean hasUser(UUID userId){
         return (userId.equals(buyer.getId()) || userId.equals(seller.getId()));
     }
 
