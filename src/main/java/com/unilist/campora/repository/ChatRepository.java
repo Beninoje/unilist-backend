@@ -4,6 +4,7 @@ import com.unilist.campora.model.Chat;
 import com.unilist.campora.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -31,8 +32,8 @@ public interface ChatRepository  extends JpaRepository<Chat, UUID> {
             UUID sellerId,
             UUID listingId
     );
-    @Query("SELECT c FROM Chat c WHERE c.buyer = :user OR c.seller = :user")
-    List<Chat> findAllByBuyerOrSeller(User user);
+    @Query("SELECT c FROM Chat c WHERE (c.buyer.id = :userId AND c.buyerDeleted = false) OR (c.seller.id = :userId AND c.sellerDeleted = false)")
+    List<Chat> findAllVisibleChats(@Param("userId") UUID userId);
 
 
 

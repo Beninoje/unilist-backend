@@ -39,17 +39,17 @@ public class UserService {
         return user.getFavourites();
     }
 
-    @Cacheable(value="listing_owner", key="#listingId")
-    public ListingOwnerDTO getListingOwner(UUID listingId, UUID buyerId){
+    @Cacheable(value="listing", key="#listingId")
+    public ListingOwnerDTO getListingOwner(UUID listingId, UUID currUserId){
         Listing listing = listingService.getListingById(listingId);
         User owner = listing.getUser();
         boolean chatExists = chatRepository.existsByBuyerIdAndSellerIdAndListingId(
-                buyerId,
+                currUserId,
                 owner.getId(),
                 listingId
         );
         Chat chat = chatRepository.findChatByBuyerIdAndSellerIdAndListingId(
-                buyerId,
+                currUserId,
                 owner.getId(),
                 listingId
         );
@@ -68,6 +68,7 @@ public class UserService {
                 owner.getFirstName(),
                 owner.getLastName(),
                 owner.getEmail(),
+                owner.getProfileImage(),
                 owner.getLatitude(),
                 owner.getLongitude(),
                 owner.getCampusType(),

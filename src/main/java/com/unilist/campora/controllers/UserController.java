@@ -4,6 +4,7 @@ import com.unilist.campora.dto.CompleteOnboardingDto;
 import com.unilist.campora.dto.UpdateUserDto;
 import com.unilist.campora.dto.chat.FetchAllChatsByCurrentUserResponseDto;
 import com.unilist.campora.model.*;
+import com.unilist.campora.records.users.SavePushTokenDto;
 import com.unilist.campora.repository.ChatRepository;
 import com.unilist.campora.repository.ListingRepository;
 import com.unilist.campora.repository.RefreshTokenRepository;
@@ -11,13 +12,17 @@ import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.responses.CompletedOnboardingResponse;
 import com.unilist.campora.responses.UpdateUserResponse;
 import com.unilist.campora.responses.UserResponse;
+import com.unilist.campora.responses.listings.ListingResponse;
+import com.unilist.campora.responses.users.ViewUserResponse;
 import com.unilist.campora.services.ChatService;
 import com.unilist.campora.services.GoogleGeoService;
 import com.unilist.campora.services.JwtService;
 import com.unilist.campora.services.UserService;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -71,9 +76,10 @@ public class UserController {
                 currentUser.getLatitude(),
                 currentUser.getLongitude(),
                 currentUser.getPostalCode(),
-                currentUser.getCampusType()
-
-
+                currentUser.getCampusType(),
+                currentUser.getOtpVerified(),
+                currentUser.getProfileImage(),
+                currentUser.isEnabled()
         );
         return ResponseEntity.ok(userResponse);
     }
@@ -81,7 +87,6 @@ public class UserController {
     @PatchMapping("/me/onboarding")
     public ResponseEntity<?> completeOnboarding(@RequestBody CompleteOnboardingDto body){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found in DB"));
         if(!body.getCampusType().equals("ORILLIA") && !body.getCampusType().equals("THUNDERBAY")){
@@ -122,6 +127,30 @@ public class UserController {
 
     }
 
+    @PostMapping("/me/save-push-token")
+    public ResponseEntity<?> savePushToken(@RequestBody SavePushTokenDto req){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+
+        Set<PushToken> tokens = currentUser.getPushTokens();
+        if(tokens == null){
+            tokens = new HashSet<>();
+        }
+        PushToken newToken = new PushToken();
+        newToken.setPushToken(req.pushToken());
+        newToken.setCreatedAt(Instant.now());
+        newToken.setUser(currentUser);
+        tokens.removeIf(t -> t.getPushToken().equals(newToken.getPushToken()));
+        tokens.add(newToken);
+        currentUser.setPushTokens(tokens);
+
+        userRepository.save(currentUser);
+        return ResponseEntity.ok("Push token saved!");
+    }
+
+    @CacheEvict(value = "listing", allEntries = true)
     @PutMapping("/me/update")
     public ResponseEntity<?> updateUserProfile(@RequestBody UpdateUserDto body){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -244,18 +273,43 @@ public class UserController {
 
         User currUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found in DB"));
-        List<Chat> chats = chatRepository.findAllByBuyerOrSeller(currUser);
-        return chats.stream()
-                .sorted(
-                        Comparator.comparing((Chat chat) ->
-                                chat.getMessages().stream()
-                                        .map(Message::getCreatedAt)
-                                        .max(Comparator.naturalOrder())
-                                        .orElse(chat.getCreatedAt())
-                        ).reversed())
+
+        return chatRepository.findAllVisibleChats(currUser.getId()).stream()
+                .sorted(Comparator.comparing(
+                            chat -> {
+                                Message lastMessage = chat.getMessages().stream()
+                                        .max(Comparator.comparing(Message::getCreatedAt))
+                                        .orElse(null);
+                                return lastMessage != null ? lastMessage.getCreatedAt() : chat.getCreatedAt();
+                            },
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ))
                 .map(chat -> chatService.mapToDto(chat, currUser))
                 .toList();
+    }
 
+    @GetMapping("/view/{id}")
+    public ResponseEntity<ViewUserResponse> viewUser(@PathVariable UUID id){
+        User user = userRepository.findById(id).orElseThrow(()-> new RuntimeException("User not found"));
+        return ResponseEntity.ok(new ViewUserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getListings().stream().map(listing -> new ListingResponse(
+                    listing.getId(),
+                        listing.getTitle(),
+                        listing.getPrice(),
+                        listing.getCategory(),
+                        listing.getStatus(),
+                        listing.getCondition(),
+                        listing.getImages(),
+                        listing.getCreatedAt()
+                )).toList(),
+                user.getCampusType(),
+                user.getProfileImage(),
+                user.isEnabled()
+        ));
     }
 
 }

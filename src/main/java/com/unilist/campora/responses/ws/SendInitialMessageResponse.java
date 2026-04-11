@@ -1,6 +1,5 @@
 package com.unilist.campora.responses.ws;
 
-import com.unilist.campora.model.Message;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SendMessageResponse {
+public class SendInitialMessageResponse {
     private UUID chatId;
     private UUID messageId;
     private UUID senderId;
@@ -27,12 +26,4 @@ public class SendMessageResponse {
     private String replyToSenderLastName;
     private boolean read;
     private Instant createdAt;
-    private UUID buyerId;
-    private String buyerFirstName;
-    private String buyerLastName;
-    private String buyerProfileImage;
-    private UUID sellerId;
-    private String sellerFirstName;
-    private String sellerLastName;
-    private String sellerProfileImage;
 }

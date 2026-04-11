@@ -10,11 +10,13 @@ import com.unilist.campora.records.auth.ResetPasswordRequest;
 import com.unilist.campora.records.auth.VerifyResetCodeRequest;
 import com.unilist.campora.repository.RefreshTokenRepository;
 import com.unilist.campora.repository.UserRepository;
+import com.unilist.campora.responses.ErrorResponse;
 import com.unilist.campora.responses.LoginResponse;
 import com.unilist.campora.responses.RegisterResponse;
 import com.unilist.campora.services.AuthenticationService;
 import com.unilist.campora.services.JwtService;
 import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequestMapping("/auth")
@@ -52,6 +55,10 @@ public class AuthenticationController {
             error.put("email", "That email is already taken");
             return ResponseEntity.badRequest().body(error);
         }
+        if(!registerUserDto.getEmail().matches("^[^@\\s]+@lakeheadu\\.ca$")){
+            error.put("validate","Your must be a registered Lakehead student");
+            return ResponseEntity.badRequest().body(error);
+        }
         if(registerUserDto.getPassword().length() < 12){
             error.put("password", "Password must be greater that 8 characters");
             return ResponseEntity.badRequest().body(error);
@@ -63,33 +70,20 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login (@RequestBody LoginUserDto loginUserDto) {
+    public ResponseEntity<?> login (@RequestBody LoginUserDto loginUserDto) {
         try {
             User user = authenticationService.authenticate(loginUserDto);
-            String token = jwtService.generateToken(user);
-            UUID refreshToken = UUID.randomUUID();
 
-            RefreshToken rtExists = refreshTokenRepository.findByUser(user).orElse(null);
-            if(rtExists != null){
-                rtExists.setToken(refreshToken);
-                rtExists.setExpiresAt(Instant.now().plus(30, ChronoUnit.DAYS));
-                rtExists.setRevoked(false);
-                refreshTokenRepository.save(rtExists);
-            }else {
-                refreshTokenRepository.save(RefreshToken.builder()
-                        .user(user)
-                        .token(refreshToken)
-                        .expiresAt(Instant.now().plus(30, ChronoUnit.DAYS))
-                        .revoked(false)
-                        .build()
-
-                );
-            }
-            LoginResponse loginResponse = new LoginResponse(
+            if (!user.getOtpVerified()) {
+                user.setVerificationCode(authenticationService.generateVerificationCode());
+                user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));
+                userRepository.save(user);
+                authenticationService.sendVerificationCodeEmail(user);
+                return ResponseEntity.ok(new LoginResponse(
                         user.getId(),
-                        token,
-                        jwtService.getJwtExpiration(),
-                        refreshToken,
+                        null,
+                        0,
+                        null,
                         user.getFirstName(),
                         user.getLastName(),
                         user.getEmail(),
@@ -99,15 +93,59 @@ public class AuthenticationController {
                         user.getPostalCode(),
                         user.getCampusType(),
                         user.isOnboardingComplete(),
-                        user.getProfileImage()
+                        user.getProfileImage(),
+                        user.getOtpVerified(),
+                        user.isEnabled()
+                ));
 
+            }
+            String token = jwtService.generateToken(user);
+            UUID refreshToken = UUID.randomUUID();
+
+            RefreshToken rtExists = refreshTokenRepository.findByUser(user).orElse(null);
+            if (rtExists != null) {
+                rtExists.setToken(refreshToken);
+                rtExists.setExpiresAt(Instant.now().plus(30, ChronoUnit.DAYS));
+                rtExists.setRevoked(false);
+                refreshTokenRepository.save(rtExists);
+            } else {
+                refreshTokenRepository.save(RefreshToken.builder()
+                        .user(user)
+                        .token(refreshToken)
+                        .expiresAt(Instant.now().plus(30, ChronoUnit.DAYS))
+                        .revoked(false)
+                        .build()
+
+                );
+            }
+
+
+            LoginResponse loginResponse = new LoginResponse(
+                    user.getId(),
+                    token,
+                    jwtService.getJwtExpiration(),
+                    refreshToken,
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getEmail(),
+                    user.getFavourites().stream().map(Listing::getId).toList(),
+                    user.getLatitude(),
+                    user.getLongitude(),
+                    user.getPostalCode(),
+                    user.getCampusType(),
+                    user.isOnboardingComplete(),
+                    user.getProfileImage(),
+                    user.getOtpVerified(),
+                    user.isEnabled()
             );
             return ResponseEntity.ok(loginResponse);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(null);
         }
+            catch (RuntimeException e) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse(e.getMessage()));
+            }
+
     }
 
     @PostMapping("/refresh")
@@ -154,14 +192,22 @@ public class AuthenticationController {
             User user = authenticationService.verifyUser(verifyUserDto);
             String token = jwtService.generateToken(user);
             UUID refreshToken = UUID.randomUUID();
-            refreshTokenRepository.save(RefreshToken.builder()
-                    .user(user)
-                    .token(refreshToken)
-                    .expiresAt(Instant.now().plus(30, ChronoUnit.DAYS))
-                    .revoked(false)
-                    .build()
+            RefreshToken rtExists = refreshTokenRepository.findByUser(user).orElse(null);
+            if(rtExists != null){
+                rtExists.setToken(refreshToken);
+                rtExists.setExpiresAt(Instant.now().plus(30, ChronoUnit.DAYS));
+                rtExists.setRevoked(false);
+                refreshTokenRepository.save(rtExists);
+            }else {
+                refreshTokenRepository.save(RefreshToken.builder()
+                        .user(user)
+                        .token(refreshToken)
+                        .expiresAt(Instant.now().plus(30, ChronoUnit.DAYS))
+                        .revoked(false)
+                        .build()
 
-            );
+                );
+            }
             RegisterResponse registerResponse = new RegisterResponse(
                     token,
                     jwtService.getJwtExpiration(),

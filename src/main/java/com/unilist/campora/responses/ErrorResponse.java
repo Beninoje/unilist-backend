@@ -1,21 +1,19 @@
-package com.unilist.campora.dto;
+package com.unilist.campora.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Map;
+
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class VerifyUserDto {
-    private String email;
-    private String verificationCode;
-
+@AllArgsConstructor
+public class ErrorResponse {
+    private String message;
 
 
 
 }
-
-

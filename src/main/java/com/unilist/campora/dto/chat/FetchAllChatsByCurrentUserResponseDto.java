@@ -15,6 +15,7 @@ public class FetchAllChatsByCurrentUserResponseDto {
     private UUID otherUserId;
     private String otherFirstName;
     private String otherLastName;
+    private String otherUserProfileImage;
     private Instant createdAt;
     private String lastMessage;
     private UUID listingId;

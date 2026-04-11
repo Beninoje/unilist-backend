@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campora Verification Code</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrapper {
+            width: 100%;
+            table-layout: fixed;
+            background-color: #f9fafb;
+            padding-bottom: 40px;
+        }
+        .main {
+            background-color: #ffffff;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 600px;
+            border-spacing: 0;
+            color: #1f2937;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .header {
+            padding: 40px 0 20px;
+            text-align: center;
+        }
+        .logo {
+            width: 200px;
+            height: auto; /* Changed to auto to prevent distortion */
+            max-height: 100px;
+        }
+        .content {
+            padding: 20px 40px;
+            text-align: center;
+        }
+        .otp-container {
+            background-color: #f3f4f6;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0;
+            display: inline-block;
+        }
+        .otp-code {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            color: #007AFF;
+            margin: 0;
+        }
+        .footer {
+            padding: 30px 40px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+        }
+        .slogan {
+            color: #9ca3af;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        .support-text {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #4b5563;
+        }
+        a {
+            color: #007AFF;
+            text-decoration: none;
+        }
+        .footer-links a {
+            color: #6b7280;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <table class="main" role="presentation">
+        <tr>
+            <td class="header">
+                <img src="https://firebasestorage.googleapis.com/v0/b/campora-5b484.firebasestorage.app/o/otp-email-logo%2FLogo_1.svg?alt=media&token=a84e4fba-ea08-4690-a1a3-43d63fb744df" alt="Campora" class="logo">
+            </td>
+        </tr>
+        <tr>
+            <td class="content">
+                <h1>Verify your email</h1>
+                <p>Use the following one-time password to complete the process. This code is valid for the next <b>15 minutes.</b></p>
+
+                <div class="otp-container">
+                    <p class="otp-code">[[${otpCode}]]</p>
+                </div>
+
+                <p style="font-size: 14px;">If you didn’t request this code, you can safely ignore this email. Someone else might have typed your email address by mistake.</p>
+
+                <p class="support-text" style="font-size: 13px;">
+                    Questions? Email us at <a href="mailto:support@campora.ca">support@campora.ca</a>
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td class="footer">
+                <p class="slogan">Your campus, your marketplace.</p>
+                <p>&copy; 2026 Campora. All rights reserved.</p>
+                <p class="footer-links">
+                    <a href="https://campora.ca/privacy-policy">Privacy Policy</a> |
+                    <a href="https://campora.ca/terms-and-conditions">Terms & Conditions</a>
+
+                </p>
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

@@ -14,7 +14,10 @@ public record UserResponse(
         Double latitude,
         Double longitude,
         String postalCode,
-        String campusType
+        String campusType,
+        boolean optVerified,
+        String profileImage,
+        boolean enabled
         ) {
 
 }

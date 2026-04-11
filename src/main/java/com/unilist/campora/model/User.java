@@ -62,16 +62,22 @@ public class User implements UserDetails {
     @Column(name="user_enabled")
     private boolean enabled;
 
+    @Column(name="otp_verified")
+    private boolean optVerified;
+
     @Column(name="onboarding_completed")
     private boolean onboardingComplete;
 
     @Column(name = "campus_type")
     private String campusType;
 
-
     @JsonManagedReference
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Listing> listings;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<Report> reports;
 
     @ManyToMany
     @JoinTable(
@@ -85,6 +91,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "buyer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Chat> chats;
 
+    @ElementCollection
+    @CollectionTable(name = "user_push_tokens", joinColumns = @JoinColumn(name = "user_id"))
+    @OneToMany(mappedBy ="user", fetch = FetchType.EAGER,  cascade = CascadeType.ALL)
+    private Set<PushToken> pushTokens = new HashSet<>();
 
 
     public User(String email, String password, String firstName, String lastName, List<Listing> listings) {
@@ -110,6 +120,9 @@ public class User implements UserDetails {
     @Override
     public String getPassword() {
         return password;
+    }
+    public boolean getOtpVerified(){
+        return optVerified;
     }
 
 

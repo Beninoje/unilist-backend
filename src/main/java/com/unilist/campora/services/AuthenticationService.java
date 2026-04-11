@@ -4,15 +4,22 @@ import com.resend.core.exception.ResendException;
 import com.unilist.campora.dto.LoginUserDto;
 import com.unilist.campora.dto.RegisterUserDto;
 import com.unilist.campora.dto.VerifyUserDto;
+import com.unilist.campora.exceptions.OtpRequiredException;
+import com.unilist.campora.model.Listing;
 import com.unilist.campora.model.RefreshToken;
 import com.unilist.campora.model.User;
 import com.unilist.campora.repository.RefreshTokenRepository;
 import com.unilist.campora.repository.UserRepository;
+import com.unilist.campora.responses.LoginResponse;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -27,13 +34,17 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final TemplateEngine templateEngine;
+    private final JwtService jwtService;
 
-    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, EmailService emailService, RefreshTokenRepository refreshTokenRepository) {
+    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, EmailService emailService, RefreshTokenRepository refreshTokenRepository, TemplateEngine templateEngine, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.emailService = emailService;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.templateEngine = templateEngine;
+        this.jwtService = jwtService;
     }
 
     public User signUp(RegisterUserDto input) {
@@ -42,33 +53,32 @@ public class AuthenticationService {
         user.setPassword(encodedPassword);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));
-        user.setEnabled(false);
+        user.setOptVerified(false);
         user.setOnboardingComplete(false);
         sendVerificationCodeEmail(user);
         return userRepository.save(user);
     }
 
     public User authenticate(LoginUserDto input){
-        try {
+
             User user = userRepository.findByEmail(input.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
-            if(!user.isEnabled()){
-                throw new RuntimeException("Account is not verified, please verify your account");
+            if(!user.isOptVerified()){
+                return user;
             }
-
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            input.getEmail(),
-                            input.getPassword()
-                    )
-            );
+            if(!passwordEncoder.matches(input.getPassword(), user.getPassword())){
+                throw new RuntimeException("Email or password are incorrect");
+            }
+//            authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(
+//                            input.getEmail(),
+//                            input.getPassword()
+//                    )
+//            );
 
             return user;
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Authentication failed: " + e.getMessage());
-        }
+
     }
 
     public User verifyUser(VerifyUserDto input){
@@ -79,7 +89,7 @@ public class AuthenticationService {
                 throw new RuntimeException("Verification code expired");
             }
             if(user.getVerificationCode().equals(input.getVerificationCode())){
-                user.setEnabled(true);
+                user.setOptVerified(true);
                 user.setVerificationCode(null);
                 user.setVerificationExpiresAt(null);
 
@@ -97,7 +107,7 @@ public class AuthenticationService {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if(optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (user.isEnabled()) {
+            if (user.isOptVerified()) {
                 throw new RuntimeException("Account is already verified");
             }
             user.setVerificationCode(generateVerificationCode());
@@ -110,20 +120,11 @@ public class AuthenticationService {
     }
 
     public void sendVerificationCodeEmail(User user){
+        Context context = new Context();
         String subject = "Account verification";
-        String verificationCode = "VERIFICATION CODE: " + user.getVerificationCode();
-        String htmlMessage = "<html>"
-                + "<body style=\"font-family: Arial, sans-serif;\">"
-                + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
-                + "<h2 style=\"color: #333;\">Welcome to our app!</h2>"
-                + "<p style=\"font-size: 16px;\">Please enter the verification code below to continue:</p>"
-                + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
-                + "<h3 style=\"color: #333;\">Verification Code:</h3>"
-                + "<p style=\"font-size: 18px; font-weight: bold; color: #007bff;\">" + verificationCode + "</p>"
-                + "</div>"
-                + "</div>"
-                + "</body>"
-                + "</html>";
+        String verificationCode = user.getVerificationCode();
+        context.setVariable("otpCode", verificationCode);
+        String htmlMessage = templateEngine.process("opt-email",context);
 
         try{
             emailService.sendVerificationEmail(user.getEmail(), subject,htmlMessage);
@@ -133,8 +134,8 @@ public class AuthenticationService {
     }
 
     public String generateVerificationCode(){
-        Random random = new Random();
-        int code = random.nextInt(900000);
+        SecureRandom random = new SecureRandom();
+        int code = 100000 + random.nextInt(900000);
         return String.valueOf(code);
     }
 }

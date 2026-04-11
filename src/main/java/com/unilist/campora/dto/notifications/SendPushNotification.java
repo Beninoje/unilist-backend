@@ -1,4 +1,4 @@
-package com.unilist.campora.dto;
+package com.unilist.campora.dto.notifications;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,13 +9,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class VerifyUserDto {
-    private String email;
-    private String verificationCode;
-
-
-
+public class SendPushNotification{
+        String pushToken;
+        String senderFirstName;
+        String content;
 
 }
-
-

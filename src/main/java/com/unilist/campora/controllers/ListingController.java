@@ -3,6 +3,7 @@ package com.unilist.campora.controllers;
 import com.unilist.campora.dto.listing.CreateListingDto;
 import com.unilist.campora.dto.listing.EditListingDto;
 import com.unilist.campora.dto.listing.ListingOwnerDTO;
+import com.unilist.campora.model.Chat;
 import com.unilist.campora.model.Listing;
 import com.unilist.campora.model.User;
 import com.unilist.campora.repository.ListingRepository;
@@ -10,6 +11,7 @@ import com.unilist.campora.repository.UserRepository;
 import com.unilist.campora.responses.ListingResponse;
 import com.unilist.campora.responses.PageableListingResponse;
 import com.unilist.campora.responses.listings.EditListingResponse;
+import com.unilist.campora.services.ChatService;
 import com.unilist.campora.services.ListingService;
 import com.unilist.campora.services.UserService;
 import jakarta.transaction.Transactional;
@@ -39,12 +41,14 @@ public class ListingController {
     private final ListingService listingService;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final ChatService chatService;
 
-    public ListingController(ListingRepository listingRepository, ListingService listingService, UserRepository userRepository, UserService userService) {
+    public ListingController(ListingRepository listingRepository, ListingService listingService, UserRepository userRepository, UserService userService, ChatService chatService) {
         this.listingRepository = listingRepository;
         this.listingService = listingService;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.chatService = chatService;
     }
 
     @CacheEvict(value = "listings", allEntries = true)
@@ -77,7 +81,7 @@ public class ListingController {
     @PutMapping("/edit/{id}")
     @Caching(evict={
             @CacheEvict(value="listings", allEntries=true),
-            @CacheEvict(value="listing_owner", key="#id.toString()")
+            @CacheEvict(value="listing", key="#id.toString()")
     })
     public ResponseEntity<EditListingResponse> editListing(@PathVariable UUID id, @RequestBody EditListingDto body){
         Optional<Listing> currentListing = listingRepository.findById(id);
@@ -167,13 +171,50 @@ public class ListingController {
 
     @GetMapping("/view/{id}")
     public ResponseEntity<ListingOwnerDTO> viewListing(@PathVariable UUID id){
+
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found in DB"));
-        ListingOwnerDTO listing = userService.getListingOwner(id, currentUser.getId());
 
-        return ResponseEntity.ok().body(listing);
+        ListingResponse listing = listingService.getListing(id);
+        System.out.println("Listing");
+
+        UUID sellerId = listing.getListingOwnerId();
+
+        User listingOwner = userRepository.findById(listing.getListingOwnerId()).orElseThrow(()->new RuntimeException("Listing owner does not exist"));
+
+        boolean chatExists = chatService.chatExists(currentUser.getId(), sellerId, id);
+
+        Chat chat = chatService.getChat(currentUser.getId(), sellerId, id);
+
+        UUID chatId = chat != null ? chat.getId() : null;
+
+        ListingOwnerDTO dto = new ListingOwnerDTO(
+                listing.getId(),
+                listing.getTitle(),
+                listing.getPrice(),
+                listing.getCategory(),
+                listing.getDescription(),
+                listing.getImages(),
+                listing.getCondition(),
+                listing.getStatus(),
+                listing.getCreatedAt(),
+
+                sellerId,
+                listingOwner.getFirstName(),
+                listingOwner.getLastName(),
+                listingOwner.getEmail(),
+                listingOwner.getProfileImage(),
+                listingOwner.getLatitude(),
+                listingOwner.getLongitude(),
+                listingOwner.getCampusType(),
+
+                chatExists,
+                chatId
+        );
+
+        return ResponseEntity.ok().body(dto);
 
     }
 
@@ -189,7 +230,9 @@ public class ListingController {
                         listing.getCategory(),
                         listing.getCondition(),
                         listing.getDescription(),
-                        listing.getUser().getId()
+                        listing.getStatus(),
+                        listing.getUser().getId(),
+                        listing.getCreatedAt()
                 ))
                 .toList();
         return ResponseEntity.ok().body(searchedListings);

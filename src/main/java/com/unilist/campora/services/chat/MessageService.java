@@ -2,9 +2,11 @@ package com.unilist.campora.services.chat;
 
 import com.unilist.campora.dto.messages.MessageResponseDto;
 import com.unilist.campora.model.Chat;
+import com.unilist.campora.model.Message;
 import com.unilist.campora.repository.MessageRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,11 +18,12 @@ public class MessageService {
         this.messageRepository = messageRepository;
     }
 
+
+
     public List<MessageResponseDto> getAllMessagesByChat(Chat chat){
-//        UUID replyToId = message.getReplyTo() != null ? message.getReplyTo().getId() : null;
-//        String replyToContent = message.getReplyTo() != null ? message.getReplyTo().getContent() : null;
-//        UUID replyToSenderId = message.getReplyTo() != null ? message.getSender().getId() : null;
         return chat.getMessages().stream()
+                .filter(distinctByKey(Message::getId))
+                .sorted(Comparator.comparing(Message::getCreatedAt))
                 .map(msg -> MessageResponseDto.builder()
                         .messageId(msg.getId())
                         .senderId(msg.getSender().getId())
@@ -43,4 +46,10 @@ public class MessageService {
                         .build()
                 ).toList();
     }
+
+    private static <T> java.util.function.Predicate<T> distinctByKey(java.util.function.Function<? super T, ?> keyExtractor) {
+        java.util.Set<Object> seen = new java.util.concurrent.ConcurrentSkipListSet<>();
+        return t -> seen.add(keyExtractor.apply(t));
+    }
+
 }
