@@ -74,7 +74,7 @@ public class AuthenticationController {
         try {
             User user = authenticationService.authenticate(loginUserDto);
 
-            if (!user.getOtpVerified()) {
+            if (!user.getOptVerified()) {
                 user.setVerificationCode(authenticationService.generateVerificationCode());
                 user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));
                 userRepository.save(user);
@@ -92,9 +92,9 @@ public class AuthenticationController {
                         user.getLongitude(),
                         user.getPostalCode(),
                         user.getCampusType(),
-                        user.isOnboardingComplete(),
+                        user.getOnboardingComplete(),
                         user.getProfileImage(),
-                        user.getOtpVerified(),
+                        user.getOptVerified(),
                         user.isEnabled()
                 ));
 
@@ -133,9 +133,9 @@ public class AuthenticationController {
                     user.getLongitude(),
                     user.getPostalCode(),
                     user.getCampusType(),
-                    user.isOnboardingComplete(),
+                    user.getOnboardingComplete(),
                     user.getProfileImage(),
-                    user.getOtpVerified(),
+                    user.getOptVerified(),
                     user.isEnabled()
             );
             return ResponseEntity.ok(loginResponse);
@@ -215,7 +215,7 @@ public class AuthenticationController {
                     user.getFirstName(),
                     user.getLastName(),
                     refreshToken,
-                    user.isOnboardingComplete(),
+                    user.getOnboardingComplete(),
                     user.getListings(),
                     user.getFavourites().stream().map(Listing::getId).toList(),
                     user.getLatitude(),

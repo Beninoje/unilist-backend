@@ -60,13 +60,13 @@ public class User implements UserDetails {
     private Double longitude;
 
     @Column(name="user_enabled")
-    private boolean enabled;
+    private Boolean enabled;
 
     @Column(name="otp_verified")
-    private boolean optVerified;
+    private Boolean optVerified;
 
     @Column(name="onboarding_completed")
-    private boolean onboardingComplete;
+    private Boolean onboardingComplete;
 
     @Column(name = "campus_type")
     private String campusType;
@@ -120,9 +120,6 @@ public class User implements UserDetails {
     @Override
     public String getPassword() {
         return password;
-    }
-    public boolean getOtpVerified(){
-        return optVerified;
     }
 
 

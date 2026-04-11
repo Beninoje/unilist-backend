@@ -63,7 +63,7 @@ public class AuthenticationService {
 
             User user = userRepository.findByEmail(input.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
-            if(!user.isOptVerified()){
+            if(!user.getOptVerified()){
                 return user;
             }
             if(!passwordEncoder.matches(input.getPassword(), user.getPassword())){
@@ -107,7 +107,7 @@ public class AuthenticationService {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if(optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (user.isOptVerified()) {
+            if (user.getOptVerified()) {
                 throw new RuntimeException("Account is already verified");
             }
             user.setVerificationCode(generateVerificationCode());

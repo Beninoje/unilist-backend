@@ -72,12 +72,12 @@ public class UserController {
                 currentUser.getLastName(),
                 currentUser.getFavourites().stream().map(Listing::getId).toList(),
                 currentUser.getListings().stream().map(Listing::getId).toList(),
-                currentUser.isOnboardingComplete(),
+                currentUser.getOnboardingComplete(),
                 currentUser.getLatitude(),
                 currentUser.getLongitude(),
                 currentUser.getPostalCode(),
                 currentUser.getCampusType(),
-                currentUser.getOtpVerified(),
+                currentUser.getOptVerified(),
                 currentUser.getProfileImage(),
                 currentUser.isEnabled()
         );
@@ -112,7 +112,7 @@ public class UserController {
                 currentUser.getFavourites().stream().map(Listing::getId).toList(),
                 currentUser.getLatitude(),
                 currentUser.getLongitude(),
-                currentUser.isOnboardingComplete()
+                currentUser.getOnboardingComplete()
 
         ));
 
