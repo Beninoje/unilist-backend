@@ -48,9 +48,11 @@ public class Chat {
     @JsonManagedReference
     private List<Message> messages;
 
+    @Builder.Default
     @Column(name="buyer_deleted", nullable = false)
     private Boolean buyerDeleted = false;
 
+    @Builder.Default
     @Column(name="seller_deleted",nullable = false)
     private Boolean sellerDeleted = false;
 
